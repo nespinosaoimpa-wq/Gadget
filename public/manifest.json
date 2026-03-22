@@ -1,0 +1,23 @@
+{
+  "name": "SIGIC - Sistema Integral de Gestión e Investigación Criminal",
+  "short_name": "SIGIC",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#00d4ff",
+  "description": "Plataforma PWA para investigación criminal, inteligencia geoespacial y análisis de vínculos delictivos.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

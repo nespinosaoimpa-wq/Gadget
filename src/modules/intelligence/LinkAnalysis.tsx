@@ -1,0 +1,452 @@
+import { useEffect, useMemo, useState } from 'react';
+import { SigmaContainer, useLoadGraph, useRegisterEvents, ControlsContainer, ZoomControl, FullScreenControl } from '@react-sigma/core';
+import '@react-sigma/core/lib/style.css';
+import { useIntelligenceStore } from '../../store/intelligenceStore';
+import type { EntityType, PersonEntity } from '../../types/intelligenceTypes';
+import { 
+  Network, Search, Filter, Info, Layers, 
+  Share2, Settings,
+  User, Calendar, FileText
+} from 'lucide-react';
+
+// Custom Node Renderer or styling logic
+const getEntityColor = (type: EntityType) => {
+  switch (type) {
+    case 'PERSONA': return '#ff4d4f'; // Red
+    case 'ORGANIZACION': return '#ffd666'; // Gold/Yellow
+    case 'TELEFONO': return '#40a9ff'; // Blue
+    case 'VEHICULO': return '#73d13d'; // Green
+    case 'UBICACION': return '#9254de'; // Purple
+    case 'EVENTO': return '#ffa940'; // Orange
+    case 'CAUSA': return '#595959'; // Gray
+    default: return '#bfbfbf';
+  }
+};
+
+const getEntityIcon = (type: EntityType) => {
+  switch (type) {
+    case 'PERSONA': return '👤';
+    case 'ORGANIZACION': return '👥';
+    case 'TELEFONO': return '📞';
+    case 'VEHICULO': return '🚗';
+    case 'UBICACION': return '📍';
+    case 'EVENTO': return '⚡';
+    case 'CAUSA': return '📁';
+    default: return '●';
+  }
+};
+
+// Component to load graph data into Sigma
+const GraphDataController = () => {
+  const { graph, importMockData } = useIntelligenceStore();
+  const loadGraph = useLoadGraph();
+
+  useEffect(() => {
+    // Initialize with mock data if empty
+    if (graph.order === 0) {
+      importMockData();
+    }
+    
+    // Process graph for visualization
+    graph.forEachNode((node, attributes) => {
+      graph.setNodeAttribute(node, 'size', attributes.entityType === 'PERSONA' ? 15 : 10);
+      graph.setNodeAttribute(node, 'color', getEntityColor(attributes.entityType));
+      graph.setNodeAttribute(node, 'label', attributes.label);
+      // Random initial positions for layout to work
+      if (!attributes.x) graph.setNodeAttribute(node, 'x', Math.random());
+      if (!attributes.y) graph.setNodeAttribute(node, 'y', Math.random());
+    });
+
+    loadGraph(graph);
+  }, [graph, loadGraph, importMockData]);
+
+  return null;
+};
+
+// Event handlers for interactivity
+const GraphEventsController = ({ onNodeSelect }: { onNodeSelect: (id: string | null) => void }) => {
+  const registerEvents = useRegisterEvents();
+
+  useEffect(() => {
+    registerEvents({
+      clickNode: (event) => onNodeSelect(event.node),
+      clickStage: () => onNodeSelect(null),
+    });
+  }, [registerEvents, onNodeSelect]);
+
+  return null;
+};
+
+const LinkAnalysis = () => {
+  const { entities, selectedEntityId, selectEntity } = useIntelligenceStore();
+  const [activePanel, setActivePanel] = useState<'info' | 'filters' | 'tools'>('info');
+
+  const selectedEntity = useMemo(() => 
+    selectedEntityId ? entities.get(selectedEntityId) : null
+  , [selectedEntityId, entities]);
+
+  return (
+    <div style={styles.container}>
+      {/* Header / Toolbar */}
+      <div className="glass-panel" style={styles.header}>
+        <div style={styles.headerTitle}>
+          <Network className="text-cyan" size={20} />
+          <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Análisis de Vínculos</h2>
+        </div>
+        <div style={styles.headerActions}>
+          <div className="search-box" style={styles.search}>
+            <Search size={16} />
+            <input type="text" placeholder="Buscar entidad, DNI, alias..." style={styles.input} />
+          </div>
+          <button className="secondary-btn"><Share2 size={16} /> Exportar</button>
+          <button className="primary-btn"><Settings size={16} /> Analizar</button>
+        </div>
+      </div>
+
+      <div style={styles.mainContent}>
+        {/* Graph Canvas */}
+        <div style={styles.graphWrapper} className="glass-panel">
+          <SigmaContainer settings={{ allowInvalidContainer: true, labelFont: 'Inter' }} style={{ height: '100%', width: '100%' }}>
+            <GraphDataController />
+            <GraphEventsController onNodeSelect={selectEntity} />
+            <ControlsContainer position={'bottom-right'}>
+              <ZoomControl />
+              <FullScreenControl />
+            </ControlsContainer>
+          </SigmaContainer>
+          
+          {/* Floating Controls Overlay */}
+          <div style={styles.floatingControls}>
+            <button 
+              style={styles.controlBtn} 
+              className={activePanel === 'filters' ? 'active' : ''}
+              onClick={() => setActivePanel('filters')}
+            >
+              <Filter size={20} />
+            </button>
+            <button 
+              style={styles.controlBtn} 
+              className={activePanel === 'tools' ? 'active' : ''}
+              onClick={() => setActivePanel('tools')}
+            >
+              <Layers size={20} />
+            </button>
+            <button 
+              style={styles.controlBtn} 
+              className={activePanel === 'info' ? 'active' : ''}
+              onClick={() => setActivePanel('info')}
+            >
+              <Info size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Right Detail / Options Panel */}
+        <div style={styles.sidePanel} className="glass-panel">
+          {activePanel === 'info' && (
+            <div style={styles.panelContent}>
+              {selectedEntity ? (
+                <>
+                  <div style={styles.entityHeader}>
+                    <div style={{...styles.entityIcon, backgroundColor: getEntityColor(selectedEntity.entityType)}}>
+                      {getEntityIcon(selectedEntity.entityType)}
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0 }}>{selectedEntity.label}</h3>
+                      <span style={styles.entityTag}>{selectedEntity.entityType}</span>
+                    </div>
+                  </div>
+
+                  <div style={styles.detailsList}>
+                    <DetailItem label="ID" value={selectedEntity.id} icon={<FileText size={14} />} />
+                    <DetailItem label="Fuente" value={selectedEntity.source} icon={<Info size={14} />} />
+                    <DetailItem label="Clasificación" value={selectedEntity.classification} icon={<Layers size={14} />} />
+                    <DetailItem label="Creado" value={new Date(selectedEntity.createdAt).toLocaleDateString()} icon={<Calendar size={14} />} />
+                    
+                    {selectedEntity.entityType === 'PERSONA' && (
+                      <>
+                        <div style={styles.sectionDivider}>Antropometría y Datos</div>
+                        <DetailItem 
+                          label="Aliases" 
+                          value={(selectedEntity as PersonEntity).aliases.join(', ') || 'N/A'} 
+                          icon={<User size={14} />} 
+                        />
+                        <DetailItem 
+                          label="Causas" 
+                          value={(selectedEntity as PersonEntity).criminalRecord.length.toString()} 
+                          icon={<FileText size={14} />} 
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  <div style={styles.actionGrid}>
+                    <button className="primary-btn" style={{ width: '100%' }}>Ver Dossier Completo</button>
+                    <button className="secondary-btn" style={{ width: '100%' }}>Expandir Red</button>
+                  </div>
+                </>
+              ) : (
+                <div style={styles.emptyState}>
+                  <Network size={48} className="text-muted" opacity={0.3} />
+                  <p>Seleccione un nodo en el visor para analizar sus vínculos e información detallada.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activePanel === 'filters' && (
+            <div style={styles.panelContent}>
+              <h3>Filtros de Inteligencia</h3>
+              <p className="text-muted">Filtrar entidades y vínculos en el visor.</p>
+              
+              <div style={styles.filterSection}>
+                <label style={styles.filterLabel}>Nivel de Confianza</label>
+                <input type="range" style={{ width: '100%' }} />
+              </div>
+
+              <div style={styles.filterSection}>
+                <label style={styles.filterLabel}>Tipos de Entidad</label>
+                <FilterToggle label="Personas" active={true} color={getEntityColor('PERSONA')} />
+                <FilterToggle label="Organizaciones" active={true} color={getEntityColor('ORGANIZACION')} />
+                <FilterToggle label="Vehículos" active={true} color={getEntityColor('VEHICULO')} />
+                <FilterToggle label="Teléfonos" active={true} color={getEntityColor('TELEFONO')} />
+              </div>
+            </div>
+          )}
+
+          {activePanel === 'tools' && (
+            <div style={styles.panelContent}>
+              <h3>Herramientas SNA</h3>
+              <p className="text-muted">Social Network Analysis algorithms.</p>
+              
+              <div style={styles.toolList}>
+                <ToolItem title="Comunidades (Louvain)" description="Detectar grupos dentro de la red." />
+                <ToolItem title="Intermediación" description="Encontrar puentes críticos entre delincuentes." />
+                <ToolItem title="Camino más corto" description="Vínculo oculto entre dos nodos." />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Sub-components
+const DetailItem = ({ label, value, icon }: any) => (
+  <div style={styles.detailItem}>
+    <span style={styles.detailIcon}>{icon}</span>
+    <div style={{ flex: 1 }}>
+      <label style={styles.detailLabel}>{label}</label>
+      <div style={styles.detailValue}>{value}</div>
+    </div>
+  </div>
+);
+
+const FilterToggle = ({ label, active, color }: any) => (
+  <div style={styles.filterToggle}>
+    <div style={{...styles.dot, backgroundColor: color}} />
+    <span style={{ flex: 1 }}>{label}</span>
+    <input type="checkbox" checked={active} readOnly />
+  </div>
+);
+
+const ToolItem = ({ title, description }: any) => (
+  <div style={styles.toolItem} className="hover-panel">
+    <div style={{ fontWeight: '600', color: 'var(--text-bright)' }}>{title}</div>
+    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{description}</div>
+  </div>
+);
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    height: '100%',
+    gap: '20px'
+  },
+  header: {
+    padding: '15px 25px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px'
+  },
+  headerActions: {
+    display: 'flex',
+    gap: '15px',
+    alignItems: 'center'
+  },
+  search: {
+    width: '300px'
+  },
+  input: {
+    background: 'transparent',
+    border: 'none',
+    color: 'white',
+    outline: 'none',
+    width: '100%',
+    fontSize: '0.9rem'
+  },
+  mainContent: {
+    display: 'flex',
+    flex: 1,
+    gap: '20px',
+    minHeight: 0
+  },
+  graphWrapper: {
+    flex: 1,
+    position: 'relative' as const,
+    overflow: 'hidden',
+    background: 'rgba(0,0,0,0.4)',
+    border: '1px solid rgba(255,255,255,0.05)'
+  },
+  floatingControls: {
+    position: 'absolute' as const,
+    left: '20px',
+    top: '20px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '10px',
+    zIndex: 10
+  },
+  controlBtn: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    background: 'rgba(20, 20, 30, 0.8)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    color: 'var(--text-muted)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    backdropFilter: 'blur(10px)',
+    transition: 'all 0.3s ease'
+  },
+  sidePanel: {
+    width: '350px',
+    overflowY: 'auto' as const,
+    background: 'rgba(10,12,20,0.4)'
+  },
+  panelContent: {
+    padding: '25px'
+  },
+  emptyState: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center' as const,
+    color: 'var(--text-muted)',
+    gap: '20px',
+    padding: '40px'
+  },
+  entityHeader: {
+    display: 'flex',
+    gap: '15px',
+    alignItems: 'center',
+    marginBottom: '25px'
+  },
+  entityIcon: {
+    width: '50px',
+    height: '50px',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '1.5rem',
+    boxShadow: '0 8px 16px rgba(0,0,0,0.3)'
+  },
+  entityTag: {
+    fontSize: '0.75rem',
+    color: 'var(--text-muted)',
+    background: 'rgba(255,255,255,0.05)',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    marginTop: '4px',
+    display: 'inline-block'
+  },
+  detailsList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '15px',
+    marginBottom: '30px'
+  },
+  detailItem: {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'flex-start'
+  },
+  detailIcon: {
+    color: 'var(--text-muted)',
+    marginTop: '4px'
+  },
+  detailLabel: {
+    fontSize: '0.7rem',
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '1px'
+  },
+  detailValue: {
+    color: 'var(--text-bright)',
+    fontSize: '0.95rem',
+    fontWeight: '500'
+  },
+  sectionDivider: {
+    fontSize: '0.75rem',
+    fontWeight: '700',
+    color: 'var(--text-muted)',
+    borderBottom: '1px solid rgba(255,255,255,0.1)',
+    paddingBottom: '5px',
+    marginTop: '10px'
+  },
+  actionGrid: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '12px'
+  },
+  filterSection: {
+    marginTop: '25px'
+  },
+  filterLabel: {
+    display: 'block',
+    fontSize: '0.8rem',
+    color: 'var(--text-muted)',
+    marginBottom: '10px'
+  },
+  filterToggle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '8px 0',
+    fontSize: '0.9rem',
+    color: 'var(--text-bright)'
+  },
+  dot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%'
+  },
+  toolList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '10px',
+    marginTop: '20px'
+  },
+  toolItem: {
+    padding: '12px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.05)'
+  }
+};
+
+export default LinkAnalysis;
