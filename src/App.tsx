@@ -11,6 +11,7 @@ import PersonDossier from './modules/intelligence/PersonDossier';
 import OrgDossier from './modules/intelligence/OrgDossier';
 import DocumentGenerator from './modules/documents/DocumentGenerator';
 import CrimeMap from './modules/geo/CrimeMap';
+import AutomationModule from './modules/automation/AutomationModule';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import './index.css';
 import type { Session } from '@supabase/supabase-js';
@@ -72,9 +73,10 @@ function App() {
           <Route path="inteligencia" element={<LinkAnalysis />} />
           <Route path="inteligencia/persona/:id" element={<PersonDossier />} />
           <Route path="inteligencia/organizacion/:id" element={<OrgDossier />} />
-          <Route path="geo" element={<CrimeMap />} />
-          <Route path="documentos" element={<DocumentGenerator />} />
-          {/* Catch all */}
+           <Route path="geo" element={<CrimeMap />} />
+           <Route path="documentos" element={<DocumentGenerator />} />
+           <Route path="automatizacion" element={<AutomationModule />} />
+           {/* Catch all */}
           <Route path="*" element={<div className="p-6"><h2>404 - No Encontrado</h2></div>} />
         </Route>
       </Routes>
