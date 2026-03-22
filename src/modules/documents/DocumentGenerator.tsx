@@ -6,8 +6,16 @@ import { useCaseStore } from '../../store/caseStore';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 
-// pdfMake fonts initialization
-(pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
+// Safely initialize pdfMake fonts to prevent production crashes
+try {
+  (pdfMake as any).vfs = 
+    pdfFonts?.pdfMake?.vfs || 
+    (pdfFonts as any)?.vfs || 
+    (window as any)?.pdfMake?.vfs || 
+    {};
+} catch (error) {
+  console.error('Failed to initialize pdfMake fonts:', error);
+}
 
 const templates = [
   { id: 'allanamiento', name: 'Solicitud de Allanamiento', type: 'Judicial', art: '166-169 CPP-SF' },
