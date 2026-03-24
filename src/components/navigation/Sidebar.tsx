@@ -1,15 +1,39 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FolderOpen, Network, Map, FileText, Zap, Users, Settings, ShieldAlert } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  FolderOpen, 
+  Network, 
+  Map, 
+  FileText, 
+  Zap, 
+  Settings, 
+  ShieldAlert,
+  BarChart3,
+  Search
+} from 'lucide-react';
+import { useNotificationStore } from '../../store/notificationStore';
 
 const Sidebar = () => {
+  const { notifications } = useNotificationStore();
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { type: 'label', name: 'ESTRATEGIA' },
+    { name: 'Dashboard Central', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Analítica Criminal', path: '/analitica', icon: <BarChart3 size={20} /> },
+    
+    { type: 'label', name: 'INVESTIGACIÓN' },
     { name: 'Causas Penales', path: '/causas', icon: <FolderOpen size={20} /> },
-    { name: 'Inteligencia Criminal', path: '/inteligencia', icon: <Network size={20} /> },
-    { name: 'Geoespacial', path: '/geo', icon: <Map size={20} /> },
-    { name: 'Documentos', path: '/documentos', icon: <FileText size={20} /> },
+    { name: 'Vínculos (POLE)', path: '/inteligencia', icon: <Network size={20} /> },
+    { name: 'Mapa Táctico', path: '/geo', icon: <Map size={20} /> },
+    
+    { type: 'label', name: 'OPERACIONES' },
     { name: 'Automatización', path: '/automatizacion', icon: <Zap size={20} /> },
-    { name: 'Grupos de Trabajo', path: '/grupos', icon: <Users size={20} /> },
+    { name: 'OSINT Search', path: '/automatizacion?tab=osint', icon: <Search size={20} /> },
+    { name: 'Documentos', path: '/documentos', icon: <FileText size={20} /> },
+    
+    { type: 'label', name: 'SISTEMA' },
+    { name: 'Notificaciones', path: '/automatizacion?tab=alertas', icon: <ShieldAlert size={20} />, badge: unreadCount },
     { name: 'Administración', path: '/admin', icon: <Settings size={20} /> },
   ];
 
@@ -21,19 +45,25 @@ const Sidebar = () => {
       </div>
       
       <nav style={styles.nav}>
-        {navItems.map((item) => (
-          <NavLink 
-            key={item.path} 
-            to={item.path}
-            style={({ isActive }) => ({
-              ...styles.navLink,
-              ...(isActive ? styles.navLinkActive : {})
-            })}
-          >
-            <span style={styles.icon}>{item.icon}</span>
-            <span style={styles.navText}>{item.name}</span>
-          </NavLink>
-        ))}
+        {navItems.map((item, idx) => {
+          if (item.type === 'label') {
+            return <div key={idx} style={styles.navLabel}>{item.name}</div>;
+          }
+          return (
+            <NavLink 
+              key={item.path || idx} 
+              to={item.path || '#'}
+              style={({ isActive }) => ({
+                ...styles.navLink,
+                ...(isActive ? styles.navLinkActive : {})
+              })}
+            >
+              <span style={styles.icon}>{item.icon}</span>
+              <span style={styles.navText}>{item.name}</span>
+              {item.badge ? <span style={styles.badge}>{item.badge}</span> : null}
+            </NavLink>
+          );
+        })}
       </nav>
 
       <div style={styles.userProfile}>
@@ -47,7 +77,7 @@ const Sidebar = () => {
   );
 };
 
-const styles = {
+const styles: any = {
   sidebar: {
     width: '260px',
     height: '100vh',
@@ -99,8 +129,28 @@ const styles = {
     display: 'flex',
   },
   navText: {
-    fontSize: '15px',
+    fontSize: '14px',
     fontWeight: 500,
+    flex: 1,
+  },
+  navLabel: {
+    fontSize: '10px',
+    fontWeight: 800,
+    color: 'rgba(255,255,255,0.2)',
+    letterSpacing: '1.5px',
+    marginTop: '16px',
+    marginBottom: '8px',
+    paddingLeft: '16px',
+  },
+  badge: {
+    background: 'var(--accent-red)',
+    color: '#fff',
+    fontSize: '10px',
+    fontWeight: 700,
+    padding: '2px 6px',
+    borderRadius: '10px',
+    marginLeft: 'auto',
+    boxShadow: '0 0 10px rgba(255, 71, 87, 0.4)',
   },
   userProfile: {
     padding: '16px',

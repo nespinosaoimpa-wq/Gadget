@@ -9,6 +9,10 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useCaseStore } from '../../store/caseStore';
+import pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+
+(pdfMake as any).vfs = (pdfFonts as any).pdfMake.vfs;
 
 const RaidWizard = () => {
   const { activeCase } = useCaseStore();
@@ -20,6 +24,50 @@ const RaidWizard = () => {
     objectives: [] as string[],
     urgency: 'NORMAL',
   });
+
+  const generatePDF = () => {
+    const docDefinition = {
+      content: [
+        { text: 'MINISTERIO PÚBLICO DE LA ACUSACIÓN', style: 'header', alignment: 'center' as const },
+        { text: 'PROVINCIA DE SANTA FE', style: 'subheader', alignment: 'center' as const, margin: [0, 0, 0, 20] },
+        { text: `CUIJ: ${activeCase?.cuij || 'PENDIENTE'}`, style: 'body', bold: true },
+        { text: `FISCALÍA: ${activeCase?.fiscalia || 'HOMICIDIOS'}`, style: 'body' },
+        { text: '\n' },
+        { text: 'SOLICITUD DE ORDEN DE ALLANAMIENTO', style: 'title', alignment: 'center' as const, margin: [0, 10] },
+        { text: '\n' },
+        { text: 'Al Sr. Juez de Garantías en turno:', style: 'body' },
+        { text: '\n' },
+        { 
+          text: [
+            { text: 'Tengo el agrado de dirigirme a Ud. a los fines de solicitar se sirva expedir ORDEN DE ALLANAMIENTO para el domicilio de ' },
+            { text: formData.targetAddress, bold: true },
+            { text: `, descripto como: ${formData.targetDetails}.` }
+          ],
+          style: 'body' 
+        },
+        { text: '\n' },
+        { text: 'FUNDAMENTOS:', style: 'subheader' },
+        { text: 'La presente medida se fundamenta en las tareas de inteligencia criminal obrantes en el legajo, habiéndose detectado actividad vinculada a infracciones a la Ley 23.737 y delitos conexos. El personal policial ha verificado el domicilio como punto estratégico de la organización criminal bajo estudio.', style: 'body' },
+        { text: '\n' },
+        { text: 'OBJETIVOS DE LA MEDIDA:', style: 'subheader' },
+        { 
+          ul: formData.objectives.length > 0 ? formData.objectives : ['Secuestro de estupefacientes', 'Armas de fuego', 'Elementos de pesaje', 'Dispositivos de comunicación'],
+          style: 'body' 
+        },
+        { text: '\n' },
+        { text: 'Fdo: __________________________', alignment: 'right' as const, margin: [0, 40] },
+        { text: 'FISCAL EN TURNO', alignment: 'right' as const }
+      ],
+      styles: {
+        header: { fontSize: 14, bold: true },
+        subheader: { fontSize: 12, bold: true, margin: [0, 5, 0, 5] as [number, number, number, number] },
+        title: { fontSize: 16, bold: true, decoration: 'underline' as const },
+        body: { fontSize: 11, lineHeight: 1.4 }
+      }
+    };
+
+    pdfMake.createPdf(docDefinition).download(`Orden_Allanamiento_${activeCase?.cuij || 'S-N'}.pdf`);
+  };
 
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
@@ -61,7 +109,7 @@ const RaidWizard = () => {
             <div style={styles.inputGroup}>
               <label style={styles.label}>Sujetos Identificados (POLE)</label>
               <div style={styles.chipContainer}>
-                {activeCase?.persons.map((p, i) => (
+                {activeCase?.persons?.map((p: any, i: number) => (
                   <label key={i} style={styles.chip}>
                     <input type="checkbox" />
                     <span>{p.name}</span>
@@ -107,7 +155,7 @@ const RaidWizard = () => {
               <div style={styles.summaryRow}><span>Causa:</span> <strong>{activeCase?.cuij}</strong></div>
               <div style={styles.summaryRow}><span>Fiscalía:</span> <strong>{activeCase?.fiscalia || 'Homicidios'}</strong></div>
             </div>
-            <button style={styles.downloadBtn}>
+            <button style={styles.downloadBtn} onClick={generatePDF}>
               <FileText size={18} />
               Generar Orden PDF Oficial
             </button>

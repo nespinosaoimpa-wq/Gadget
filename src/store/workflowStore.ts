@@ -14,7 +14,7 @@ interface WorkflowState {
   fetchWorkflowTasks: (workflowId: string) => Promise<void>;
   createWorkflow: (workflow: Partial<CriminalWorkflow>) => Promise<void>;
   updateTaskStatus: (taskId: string, status: WorkflowStatus) => Promise<void>;
-  moveTask: (taskId: string, newStatus: WorkflowStatus, newOrder: number) => Promise<void>;
+  moveTask: (taskId: string, newStatus: WorkflowStatus, newPosition: number) => Promise<void>;
   addTask: (task: Partial<WorkflowTask>) => Promise<void>;
   setActiveWorkflow: (workflow: CriminalWorkflow | null) => void;
 }
@@ -67,21 +67,21 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         .from('workflow_tasks')
         .select('*')
         .eq('workflow_id', workflowId)
-        .order('sort_order', { ascending: true });
+        .order('position', { ascending: true });
 
       if (error) throw error;
+      // Map 'position' to 'sort_order' if needed by types, or just use 'position'
       set({ tasks: data || [], loading: false });
     } catch (err: any) {
       set({ error: err.message, loading: false });
-      // Fallback for demo
       if (get().tasks.length === 0) {
         set({
           tasks: [
-            { id: 't1', workflow_id: workflowId, title: 'Identificación de domicilios', status: 'COMPLETADO', sort_order: 1, metadata: {} },
-            { id: 't2', workflow_id: workflowId, title: 'Solicitud ante Juez de Garantías', status: 'EN_CURSO', sort_order: 2, metadata: {} },
-            { id: 't3', workflow_id: workflowId, title: 'Coordinación con Fuerzas Federales', status: 'PENDIENTE', sort_order: 3, metadata: {} },
-            { id: 't4', workflow_id: workflowId, title: 'Ejecución y Secuestro', status: 'PENDIENTE', sort_order: 4, metadata: {} },
-          ]
+            { id: 't1', workflow_id: workflowId, title: 'Identificación de domicilios', status: 'COMPLETADO', position: 1, metadata: {} },
+            { id: 't2', workflow_id: workflowId, title: 'Solicitud ante Juez de Garantías', status: 'EN_PROGRESO', position: 2, metadata: {} },
+            { id: 't3', workflow_id: workflowId, title: 'Coordinación con Fuerzas Federales', status: 'PENDIENTE', position: 3, metadata: {} },
+            { id: 't4', workflow_id: workflowId, title: 'Ejecución y Secuestro', status: 'PENDIENTE', position: 4, metadata: {} },
+          ] as any
         });
       }
     }
@@ -99,13 +99,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       set((state) => ({ workflows: [data, ...state.workflows] }));
     } catch (err: any) {
       console.error('Error creating workflow:', err);
-      // Demo logic
-      const newWf = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...workflow,
-        created_at: new Date().toISOString()
-      } as CriminalWorkflow;
-      set((state) => ({ workflows: [newWf, ...state.workflows] }));
     }
   },
 
@@ -113,7 +106,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     try {
       const { error } = await supabase
         .from('workflow_tasks')
-        .update({ status, completed_at: status === 'COMPLETADO' ? new Date().toISOString() : null })
+        .update({ 
+          status, 
+          updated_at: new Date().toISOString()
+        })
         .eq('id', taskId);
 
       if (error) throw error;
@@ -122,32 +118,28 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       }));
     } catch (err: any) {
       console.error('Error updating task:', err);
-      set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, status } : t))
-      }));
     }
   },
 
-  moveTask: async (taskId, newStatus, newOrder) => {
+  moveTask: async (taskId, newStatus, newPosition) => {
     try {
       const { error } = await supabase
         .from('workflow_tasks')
-        .update({ status: newStatus, sort_order: newOrder })
+        .update({ 
+          status: newStatus, 
+          position: newPosition, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', taskId);
 
       if (error) throw error;
       set((state) => ({
         tasks: state.tasks.map((t) => 
-          t.id === taskId ? { ...t, status: newStatus, sort_order: newOrder } : t
-        ).sort((a, b) => a.sort_order - b.sort_order)
+          t.id === taskId ? { ...t, status: newStatus, position: newPosition } : t
+        ).sort((a, b) => (a.position || 0) - (b.position || 0))
       }));
     } catch (err: any) {
       console.error('Error moving task:', err);
-      set((state) => ({
-        tasks: state.tasks.map((t) => 
-          t.id === taskId ? { ...t, status: newStatus, sort_order: newOrder } : t
-        ).sort((a, b) => a.sort_order - b.sort_order)
-      }));
     }
   },
 
@@ -155,19 +147,14 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('workflow_tasks')
-        .insert([task])
+        .insert([{ ...task, position: get().tasks.length }])
         .select()
         .single();
 
       if (error) throw error;
       set((state) => ({ tasks: [...state.tasks, data] }));
     } catch (err: any) {
-      const newTask = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...task,
-        sort_order: get().tasks.length + 1
-      } as WorkflowTask;
-      set((state) => ({ tasks: [...state.tasks, newTask] }));
+      console.error('Error adding task:', err);
     }
   }
 }));

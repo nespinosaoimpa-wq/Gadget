@@ -31,7 +31,7 @@ const WorkflowBoard = () => {
     moveTask,
     addTask,
     loading 
-  } = useWorkflowStore();
+  } = useWorkflowStore() as any;
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [showAddTask, setShowAddTask] = useState<WorkflowStatus | null>(null);
@@ -96,7 +96,7 @@ const WorkflowBoard = () => {
 
       {/* Workflow Tabs */}
       <div style={styles.workflowTabs}>
-        {workflows.map(wf => (
+        {workflows.map((wf: any) => (
           <button 
             key={wf.id}
             style={{
@@ -118,13 +118,13 @@ const WorkflowBoard = () => {
         </div>
       ) : (
         <div style={styles.board}>
-          {COLUMNS.map(col => (
+          {COLUMNS.map((col: any) => (
             <div key={col.id} style={styles.column}>
               <div style={styles.columnHeader}>
                 <div style={styles.columnTitleInfo}>
                   <div style={{ ...styles.colorDot, background: col.color }} />
                   <span style={styles.columnLabel}>{col.label}</span>
-                  <span style={styles.taskCount}>{tasks.filter(t => t.status === col.id).length}</span>
+                  <span style={styles.taskCount}>{tasks.filter((t: any) => t.status === col.id).length}</span>
                 </div>
                 <button style={styles.colActionBtn} onClick={() => setShowAddTask(col.id)}><Plus size={16} /></button>
               </div>
@@ -144,28 +144,31 @@ const WorkflowBoard = () => {
                   </form>
                 )}
 
-                {tasks.filter(t => t.status === col.id).map(task => (
-                  <div key={task.id} className="glass-panel" style={styles.taskCard}>
-                    <div style={styles.taskTop}>
-                      <span style={styles.taskType}>Tarea Táctica</span>
-                      <button style={styles.taskMore}><MoreVertical size={14} /></button>
-                    </div>
-                    <h4 style={styles.taskTitle}>{task.title}</h4>
-                    <div style={styles.taskFooter}>
-                      <div style={styles.taskMeta}>
-                        <Clock size={12} />
-                        <span>Hace 2h</span>
+                {tasks
+                  .filter((t: any) => t.status === col.id)
+                  .sort((a: any, b: any) => (a.position || 0) - (b.position || 0))
+                  .map((task: any) => (
+                    <div key={task.id} className="glass-panel" style={styles.taskCard}>
+                      <div style={styles.taskTop}>
+                        <span style={styles.taskType}>Tarea Táctica</span>
+                        <button style={styles.taskMore}><MoreVertical size={14} /></button>
                       </div>
-                      <button 
-                        style={styles.moveBtn}
-                        onClick={() => handleMoveTask(task.id, task.status)}
-                        title="Mover a la siguiente etapa"
-                      >
-                        <ArrowRight size={14} />
-                      </button>
+                      <h4 style={styles.taskTitle}>{task.title}</h4>
+                      <div style={styles.taskFooter}>
+                        <div style={styles.taskMeta}>
+                          <Clock size={12} />
+                          <span>Hace 2h</span>
+                        </div>
+                        <button 
+                          style={styles.moveBtn}
+                          onClick={() => handleMoveTask(task.id, task.status)}
+                          title="Mover a la siguiente etapa"
+                        >
+                          <ArrowRight size={14} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           ))}

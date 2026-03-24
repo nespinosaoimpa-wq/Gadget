@@ -93,7 +93,19 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications' },
         (payload) => {
-          get().addNotification(payload.new as Notification);
+          const newNotif = payload.new as Notification;
+          set(state => ({
+            notifications: [newNotif, ...state.notifications],
+            unreadCount: state.unreadCount + 1
+          }));
+          
+          // Opcional: Sonido de notificación si es crítica
+          if (newNotif.severity === 'CRITICAL') {
+            try { 
+              const audio = new Audio('/alert.mp3'); 
+              audio.play(); 
+            } catch (e) { /* silent fail */ }
+          }
         }
       )
       .subscribe();

@@ -7,8 +7,10 @@ export interface WorkflowTask {
   status: WorkflowStatus;
   assigned_to?: string;
   completed_at?: string;
-  sort_order: number;
+  position: number;
   metadata: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CriminalWorkflow {
