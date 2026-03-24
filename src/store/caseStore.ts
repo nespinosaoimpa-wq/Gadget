@@ -18,36 +18,35 @@ interface CaseStore {
 const mockCases: Case[] = [
   {
     id: '1',
-    cuij: '12-345678-9',
-    title: 'Banda de Las Flores - Infracción Ley 23737',
-    description: 'Investigación sobre red de distribución de estupefacientes en el barrio Las Flores, Rosario.',
+    cuij: '21-09873456-2',
+    title: 'Insumo Microtráfico - Barranquitas Oeste',
+    description: 'Investigación basada en incidencias priorizadas de fines de 2025. Puntos calientes en Gaboto, Artigas y Domingo Silva.',
     type: 'NARCOTRÁFICO',
     status: 'EN INVESTIGACIÓN',
-    classification: 'RESERVADO',
+    classification: 'CONFIDENCIAL',
     fiscal: 'Dr. Martínez',
-    fiscalia: 'Fiscalía de Narcotráfico - Rosario',
-    startDate: '2024-01-15',
-    incidentDate: '2024-01-10',
-    location: { address: 'Bv. Seguí 3400, Rosario', lat: -32.987, lng: -60.654 },
+    fiscalia: 'Microtráfico Santa Fe',
+    startDate: '2025-12-01',
+    incidentDate: '2025-12-15',
+    location: { address: 'Barranquitas, Santa Fe Capital', lat: -31.626, lng: -60.718 },
     persons: [
-      { id: 'p1', name: 'Cantero, M.A.', role: 'IMPUTADO', alias: 'El Viejo', status: 'DETENIDO' },
-      { id: 'p2', name: 'Rodríguez, J.C.', role: 'IMPUTADO', status: 'PRÓFUGO' }
+      { id: 'p1', name: 'Maidana, P.', role: 'IMPUTADO', alias: 'Polaco', status: 'IDENTIFICADO' }
     ],
-    tags: ['Las Flores', 'Bunker', 'Distribución']
+    tags: ['Barranquitas', 'Insumo', 'Santa Fe']
   },
   {
     id: '2',
-    cuij: '21-987654-3',
-    title: 'Homicidio Calificado - Calle La Tablada',
-    description: 'Investigación por hecho de sangre ocurrido en la zona sur de Rosario.',
-    type: 'HOMICIDIO',
-    status: 'RECIBIDA',
-    classification: 'SECRETO',
+    cuij: '21-12344556-9',
+    title: 'Organización - Los de Siempre',
+    description: 'Análisis de red de distribución en San Lorenzo y San Pantaleón.',
+    type: 'NARCOTRÁFICO',
+    status: 'PRELIMINAR',
+    classification: 'RESERVADO',
     fiscal: 'Dra. Sanchez',
-    fiscalia: 'Homicidios Dolosos',
-    startDate: '2024-03-10',
+    fiscalia: 'Microtráfico Santa Fe',
+    startDate: '2026-01-10',
     persons: [],
-    tags: ['Homicidio', 'Ajuste de cuentas']
+    tags: ['San Lorenzo', 'Los de Siempre']
   }
 ];
 

@@ -82,7 +82,7 @@ const CrimeMap = () => {
       {/* Main Map Area */}
       <div style={styles.mapWrapper}>
         <MapContainer 
-          center={[-32.9442, -60.6505]} 
+          center={[-31.633, -60.72]} 
           zoom={13} 
           style={{ height: '100%', width: '100%', background: '#0a0c14' }}
           zoomControl={false}
@@ -109,8 +109,9 @@ const CrimeMap = () => {
         {/* Map Legend (Floating) */}
         <div style={styles.legend} className="glass-panel">
           <div style={styles.legendTitle}>Referencias</div>
-          <LegendItem color="#ff4d4f" label="Homicidio" />
+          <LegendItem color="#ff4d4f" label="Microtráfico" />
           <LegendItem color="#faad14" label="Narcotráfico" />
+          <LegendItem color="#ff4d4f" label="Homicidio" />
           <LegendItem color="#1890ff" label="Robo" />
           <LegendItem color="#722ed1" label="Amenazas" />
         </div>

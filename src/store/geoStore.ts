@@ -182,13 +182,55 @@ export const useGeoStore = create<GeoState>((set, get) => ({
     const { incidents } = get();
     if (incidents.length > 0) return;
 
-    const mockIncidents: CrimeIncident[] = [];
+    const mockIncidents: CrimeIncident[] = [
+      {
+        id: 'inc-1',
+        lat: -31.6265,
+        lng: -60.7180,
+        type: 'MICROTRAFICO',
+        date: '2025-12-22T17:15:00Z',
+        description: 'Bca: Artigas y Gaboto. Maniobras detectadas según Primer Informe.',
+        severity: 4,
+        classification: 'CONFIDENCIAL'
+      },
+      {
+        id: 'inc-2',
+        lat: -31.6240,
+        lng: -60.7195,
+        type: 'MICROTRAFICO',
+        date: '2025-12-30T14:20:00Z',
+        description: 'Bca: Centenera 4511. Punto de acopio identificado.',
+        severity: 5,
+        classification: 'CONFIDENCIAL'
+      },
+      {
+        id: 'inc-3',
+        lat: -31.6285,
+        lng: -60.7115,
+        type: 'MICROTRAFICO',
+        date: '2025-12-20T10:00:00Z',
+        description: 'Bca: Domingo Silva 3900. Zona de ventas recurrente.',
+        severity: 3,
+        classification: 'RESERVADO'
+      },
+      {
+        id: 'inc-4',
+        lat: -31.6280,
+        lng: -60.7150,
+        type: 'ROBO',
+        date: '2025-12-25T22:30:00Z',
+        description: 'Pte Perón 3988. Robo con arma en inmediaciones.',
+        severity: 4,
+        classification: 'RESERVADO'
+      }
+    ];
+
     const types: CrimeType[] = ['HOMICIDIO', 'NARCOTRAFICO', 'ROBO', 'MICROTRAFICO', 'LESIONES', 'AMENAZAS'];
     
-    const baseLat = -32.9442;
-    const baseLng = -60.6505;
+    const baseLat = -31.633;
+    const baseLng = -60.72;
 
-    for (let i = 0; i < 60; i++) {
+    for (let i = 5; i < 50; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
       mockIncidents.push({
         id: `geo-${i}`,
@@ -207,30 +249,31 @@ export const useGeoStore = create<GeoState>((set, get) => ({
     const mockZones: GeoZone[] = [
       {
         id: 'z1',
-        name: 'Territorio Clan Cantero (Granada)',
-        type: 'TERRITORIO',
+        name: 'Sector Priorizado: Barranquitas Oeste',
+        type: 'ZONA_CALIENTE',
         polygon: [
-          [-32.99, -60.64],
-          [-32.99, -60.63],
-          [-33.00, -60.63],
-          [-33.00, -60.64]
+          [-31.623, -60.720],
+          [-31.623, -60.710],
+          [-31.630, -60.710],
+          [-31.630, -60.720]
         ],
         color: '#ff4d4f',
         active: true,
-        metadata: { banda: 'Los Monos' }
+        metadata: { prioridad: 'ALTA', informe: 'Insumo Microtráfico 2026' }
       },
       {
         id: 'z2',
-        name: 'Zona Caliente Microcentro',
-        type: 'ZONA_CALIENTE',
+        name: 'Influencia "La Negrada"',
+        type: 'TERRITORIO',
         polygon: [
-          [-32.94, -60.65],
-          [-32.94, -60.64],
-          [-32.95, -60.64],
-          [-32.95, -60.65]
+          [-31.620, -60.730],
+          [-31.620, -60.720],
+          [-31.625, -60.720],
+          [-31.625, -60.730]
         ],
         color: '#faad14',
-        active: true
+        active: true,
+        metadata: { banda: 'La Negrada' }
       }
     ];
 

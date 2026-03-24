@@ -50,55 +50,45 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
       {
         id: 'p1',
         entityType: 'PERSONA',
-        label: 'Ariel C.',
-        aliases: ['Guille'],
-        criminalRecord: ['case1'],
-        source: 'REINCIDENCIA',
-        classification: 'RESERVADO',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'p2',
-        entityType: 'PERSONA',
-        label: 'Máximo C.',
-        aliases: ['Viejo'],
-        criminalRecord: ['case1'],
-        source: 'AIC',
+        label: 'Polaco Maidana',
+        aliases: ['Polaco'],
+        criminalRecord: ['case-mt1'],
+        source: 'INTELIGENCIA-SF',
         classification: 'CONFIDENCIAL',
         createdAt: new Date().toISOString()
       },
       {
         id: 'org1',
         entityType: 'ORGANIZACION',
-        label: 'Clan C.',
-        orgType: 'CLAN',
-        territory: 'Barrio Granada',
+        label: 'La Negrada',
+        orgType: 'BANDA',
+        territory: 'Barrio Barranquitas / Villa del Parque',
         hierarchy: [
-          { personId: 'p1', rank: 'LÍDER' },
-          { personId: 'p2', rank: 'FUNDADOR' }
+          { personId: 'p1', rank: 'CABECILLA' }
         ],
-        source: 'INTELIGENCIA',
+        source: 'MPA-SANTA-FE',
         classification: 'RESERVADO',
         createdAt: new Date().toISOString()
       },
       {
-        id: 't1',
-        entityType: 'TELEFONO',
-        label: '341-4455XXX',
-        number: '3414455000',
-        source: 'OFICIO-TELECOM',
-        classification: 'CONFIDENCIAL',
+        id: 'org2',
+        entityType: 'ORGANIZACION',
+        label: 'Los de Siempre',
+        orgType: 'BANDA',
+        territory: 'San Pantaleón / San Lorenzo',
+        source: 'TRI-SANTA-FE',
+        classification: 'RESERVADO',
         createdAt: new Date().toISOString()
       },
       {
         id: 'v1',
         entityType: 'VEHICULO',
-        label: 'VW Amarok (AF 123 XX)',
-        plate: 'AF123XX',
-        make: 'VW',
-        model: 'Amarok',
-        color: 'Blanco',
-        source: 'LPR-CENTRO',
+        label: 'Honda Tornado (Dominio 123 ABC)',
+        plate: '123ABC',
+        make: 'Honda',
+        model: 'Tornado',
+        color: 'Rojo/Blanco',
+        source: 'LPR-BARRANQUITAS',
         classification: 'USO INTERNO',
         createdAt: new Date().toISOString()
       }
@@ -112,45 +102,27 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
         source: 'p1',
         target: 'org1',
         relationType: 'MIEMBRO_DE',
-        confidence: 1.0,
-        sourceInfo: 'SENTENCIA JUDICIAL',
-        dateDetected: '2020-05-15'
+        confidence: 0.9,
+        sourceInfo: 'INFORME PRELIMINAR BARRANQUITAS',
+        dateDetected: '2025-12-15'
       },
       {
         id: 'e2',
-        source: 'p2',
-        target: 'org1',
-        relationType: 'MIEMBRO_DE',
-        confidence: 1.0,
-        sourceInfo: 'SENTENCIA JUDICIAL',
-        dateDetected: '2015-02-10'
+        source: 'org1',
+        target: 'org2',
+        relationType: 'RELEVO_DE',
+        confidence: 0.7,
+        sourceInfo: 'CRUCE DE INCIDENCIAS 2026',
+        dateDetected: '2026-01-10'
       },
       {
         id: 'e3',
         source: 'p1',
-        target: 'p2',
-        relationType: 'FAMILIAR',
-        confidence: 1.0,
-        sourceInfo: 'REGISTRO CIVIL',
-        dateDetected: '2000-01-01'
-      },
-      {
-        id: 'e4',
-        source: 'p1',
-        target: 't1',
-        relationType: 'PROPIETARIO',
-        confidence: 0.9,
-        sourceInfo: 'INTERVENCION TELEFONICA',
-        dateDetected: '2023-11-01'
-      },
-      {
-        id: 'e5',
-        source: 'p1',
         target: 'v1',
         relationType: 'ASOCIADO_CON',
         confidence: 0.8,
-        sourceInfo: 'RECONOCIMIENTO POR TESTIGO',
-        dateDetected: '2024-01-10'
+        sourceInfo: 'VISUALIZACION DIRECTA GABOTO',
+        dateDetected: '2025-12-20'
       }
     ];
 

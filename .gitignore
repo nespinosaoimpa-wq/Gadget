@@ -31,3 +31,9 @@ dist-ssr
 
 # Agent/AI directories
 .gemini/
+
+# Large data inputs
+microtrafico/
+Microtrafico/
+*.zip
+*.kmz
