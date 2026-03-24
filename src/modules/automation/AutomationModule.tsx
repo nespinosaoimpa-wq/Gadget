@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { 
   Zap, 
   Workflow, 
@@ -10,14 +10,22 @@ import {
   Newspaper, 
   Bell 
 } from 'lucide-react';
-import WorkflowBoard from './WorkflowBoard';
-import RaidWizard from './RaidWizard';
-import FieldOps from './FieldOps';
-import FiscalDashboard from './FiscalDashboard';
-import AnalystToolkit from './AnalystToolkit';
-import OsintSearch from './OsintSearch';
-import PressGenerator from './PressGenerator';
-import NotificationCenter from './NotificationCenter';
+
+// Lazy load sub-modules
+const WorkflowBoard = lazy(() => import('./WorkflowBoard'));
+const RaidWizard = lazy(() => import('./RaidWizard'));
+const FieldOps = lazy(() => import('./FieldOps'));
+const FiscalDashboard = lazy(() => import('./FiscalDashboard'));
+const AnalystToolkit = lazy(() => import('./AnalystToolkit'));
+const OsintSearch = lazy(() => import('./OsintSearch'));
+const PressGenerator = lazy(() => import('./PressGenerator'));
+const NotificationCenter = lazy(() => import('./NotificationCenter'));
+
+const LoadingTab = () => (
+  <div style={{ padding: '40px', textAlign: 'center', color: 'var(--primary-cyan)' }}>
+    <p>Iniciando módulo operativo...</p>
+  </div>
+);
 
 type AutomationTab = 'WORKFLOW' | 'RAIDS' | 'FIELD' | 'FISCAL' | 'ANALYST' | 'OSINT' | 'PRESS' | 'ALERTS';
 
@@ -89,7 +97,9 @@ const AutomationModule = () => {
       </header>
 
       <main style={styles.main}>
-        {renderContent()}
+        <Suspense fallback={<LoadingTab />}>
+          {renderContent()}
+        </Suspense>
       </main>
     </div>
   );

@@ -12,7 +12,12 @@ import { useCaseStore } from '../../store/caseStore';
 import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
-(pdfMake as any).vfs = (pdfFonts as any).pdfMake.vfs;
+// Fix for pdfmake in Vite/React
+if (pdfFonts && (pdfFonts as any).pdfMake) {
+  (pdfMake as any).vfs = (pdfFonts as any).pdfMake.vfs;
+} else if ((pdfFonts as any).vfs) {
+  (pdfMake as any).vfs = (pdfFonts as any).vfs;
+}
 
 const RaidWizard = () => {
   const { activeCase } = useCaseStore();
