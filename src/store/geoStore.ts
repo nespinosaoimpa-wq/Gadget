@@ -180,7 +180,7 @@ export const useGeoStore = create<GeoState>((set, get) => ({
 
   importMockGeoData: () => {
     const { incidents } = get();
-    if (incidents.length > 0) return;
+    if (incidents.length > 5) return;
 
     const mockIncidents: CrimeIncident[] = [
       {
@@ -215,32 +215,41 @@ export const useGeoStore = create<GeoState>((set, get) => ({
       },
       {
         id: 'inc-4',
-        lat: -31.6280,
-        lng: -60.7150,
-        type: 'ROBO',
-        date: '2025-12-25T22:30:00Z',
-        description: 'Pte Perón 3988. Robo con arma en inmediaciones.',
+        lat: -31.6110,
+        lng: -60.7050,
+        type: 'MICROTRAFICO',
+        date: '2026-01-05T11:30:00Z',
+        description: 'San Pantaleón: Intercepción de pasamanos recurrente.',
         severity: 4,
         classification: 'RESERVADO'
+      },
+      {
+        id: 'inc-5',
+        lat: -31.5850,
+        lng: -60.7020,
+        type: 'MICROTRAFICO',
+        date: '2026-01-12T16:45:00Z',
+        description: 'Recreo: Domicilio de interés (Leguizamón).',
+        severity: 5,
+        classification: 'CONFIDENCIAL'
       }
     ];
 
     const types: CrimeType[] = ['HOMICIDIO', 'NARCOTRAFICO', 'ROBO', 'MICROTRAFICO', 'LESIONES', 'AMENAZAS'];
-    
     const baseLat = -31.633;
     const baseLng = -60.72;
 
-    for (let i = 5; i < 50; i++) {
+    for (let i = 6; i < 60; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
       mockIncidents.push({
         id: `geo-${i}`,
-        lat: baseLat + (Math.random() - 0.5) * 0.1,
-        lng: baseLng + (Math.random() - 0.5) * 0.1,
+        lat: baseLat + (Math.random() - 0.5) * 0.12,
+        lng: baseLng + (Math.random() - 0.5) * 0.12,
         type,
-        date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        description: `Incidente de ${type.toLowerCase()} reportado en patrullaje preventivo.`,
+        date: new Date(Date.now() - Math.random() * 45 * 24 * 60 * 60 * 1000).toISOString(),
+        description: `Incidente de ${type.toLowerCase()} registrado en sistema 911/Informes.`,
         severity: (Math.floor(Math.random() * 5) + 1) as any,
-        classification: 'CONFIDENCIAL'
+        classification: 'RESERVADO'
       });
     }
 
@@ -259,21 +268,35 @@ export const useGeoStore = create<GeoState>((set, get) => ({
         ],
         color: '#ff4d4f',
         active: true,
-        metadata: { prioridad: 'ALTA', informe: 'Insumo Microtráfico 2026' }
+        metadata: { prioridad: 'ALTA', informe: 'Ref. info N°047_25', banda: 'La Negrada' }
       },
       {
         id: 'z2',
-        name: 'Influencia "La Negrada"',
+        name: 'Influencia "Los de Siempre"',
         type: 'TERRITORIO',
         polygon: [
-          [-31.620, -60.730],
-          [-31.620, -60.720],
-          [-31.625, -60.720],
-          [-31.625, -60.730]
+          [-31.615, -60.710],
+          [-31.615, -60.700],
+          [-31.620, -60.700],
+          [-31.620, -60.710]
         ],
         color: '#faad14',
         active: true,
-        metadata: { banda: 'La Negrada' }
+        metadata: { banda: 'Los de Siempre', territorio: 'San Pantaleón' }
+      },
+      {
+        id: 'z3',
+        name: 'Foco Norte: Clan Leguizamón',
+        type: 'ZONA_CALIENTE',
+        polygon: [
+          [-31.580, -60.705],
+          [-31.580, -60.695],
+          [-31.590, -60.695],
+          [-31.590, -60.705]
+        ],
+        color: '#fa541c',
+        active: true,
+        metadata: { banda: 'Aceiteros', operacion: 'Castañaduy 6807' }
       }
     ];
 

@@ -40,7 +40,7 @@ const mockCases: Case[] = [
     title: 'Organización - Los de Siempre',
     description: 'Análisis de red de distribución en San Lorenzo y San Pantaleón.',
     type: 'NARCOTRÁFICO',
-    status: 'PRELIMINAR',
+    status: 'EN INVESTIGACIÓN',
     classification: 'RESERVADO',
     fiscal: 'Dra. Sanchez',
     fiscalia: 'Microtráfico Santa Fe',
