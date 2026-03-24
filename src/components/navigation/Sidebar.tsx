@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -12,9 +13,12 @@ import {
   Search
 } from 'lucide-react';
 import { useNotificationStore } from '../../store/notificationStore';
+import { supabase } from '../../lib/supabaseClient';
+import { LogOut } from 'lucide-react';
 
 const Sidebar = () => {
   const { notifications } = useNotificationStore();
+  const [isHovered, setIsHovered] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const navItems = [
@@ -36,6 +40,12 @@ const Sidebar = () => {
     { name: 'Notificaciones', path: '/automatizacion?tab=alertas', icon: <ShieldAlert size={20} />, badge: unreadCount },
     { name: 'Administración', path: '/admin', icon: <Settings size={20} /> },
   ];
+
+  const handleLogout = async () => {
+    localStorage.removeItem('sigic_guest_session');
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  };
 
   return (
     <aside style={styles.sidebar}>
@@ -72,6 +82,19 @@ const Sidebar = () => {
           <div style={styles.userName}>Fiscal Martínez</div>
           <div style={styles.userRole}>Nivel 1 - Fiscal</div>
         </div>
+        <button 
+          onClick={handleLogout}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          style={{
+            ...styles.logoutBtn,
+            background: isHovered ? 'rgba(255, 77, 79, 0.1)' : 'none',
+            color: isHovered ? '#ff4d4f' : 'var(--text-muted)'
+          }}
+          title="Cerrar Sesión"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </aside>
   );
@@ -182,6 +205,17 @@ const styles: any = {
   userRole: {
     fontSize: '12px',
     color: 'var(--text-muted)',
+  },
+  logoutBtn: {
+    marginLeft: 'auto',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
   }
 };
 

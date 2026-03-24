@@ -44,8 +44,9 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // In demo mode (no Supabase configured), allow access
-  const isAuthenticated = !isSupabaseConfigured() || !!session;
+  // In demo mode or if guest access is enabled, allow access
+  const isGuest = localStorage.getItem('sigic_guest_session') === 'true';
+  const isAuthenticated = !isSupabaseConfigured() || !!session || isGuest;
 
   if (loading && isSupabaseConfigured()) {
     return (

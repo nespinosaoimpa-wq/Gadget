@@ -61,6 +61,10 @@ const Login = () => {
       setError('Ingrese un código de 6 dígitos.');
     }
   };
+  const handleGuestAccess = () => {
+    localStorage.setItem('sigic_guest_session', 'true');
+    window.location.href = '/dashboard';
+  };
 
   return (
     <div style={styles.container}>
@@ -156,6 +160,13 @@ const Login = () => {
         )}
 
         <div style={styles.footer}>
+          <button 
+            type="button" 
+            onClick={handleGuestAccess}
+            style={styles.guestBtn}
+          >
+            Acceso de Cortesía (Modo Demo)
+          </button>
           <span style={styles.securityBadge}>🔒 Cifrado AES-256 | TLS 1.3</span>
           <span style={styles.securityBadge}>Nivel de Acceso Restringido</span>
         </div>
@@ -286,6 +297,19 @@ const styles = {
     padding: '4px 12px',
     borderRadius: '20px',
     border: '1px solid rgba(255,255,255,0.05)',
+  },
+  guestBtn: {
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    color: 'var(--primary-cyan)',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    marginBottom: '10px',
+    width: '100%',
+    transition: 'all 0.2s',
   }
 };
 
