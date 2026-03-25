@@ -6,38 +6,24 @@ import { useGeoStore } from '../../store/geoStore';
 import type { EntityType, PersonEntity } from '../../types/intelligenceTypes';
 import { 
   Network, Search, Filter, Info, Layers, 
-  Share2, Settings, Cloud, ShieldCheck, FileCheck,
-  User, Calendar, FileText, Loader2
+  Share2, Settings, Cloud, ShieldCheck, 
+  Zap, AlertTriangle
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-// Custom Node Renderer or styling logic
 const getEntityColor = (type: EntityType) => {
   switch (type) {
-    case 'PERSONA': return '#ff4d4f'; // Red
-    case 'ORGANIZACION': return '#ffd666'; // Gold/Yellow
-    case 'TELEFONO': return '#40a9ff'; // Blue
-    case 'VEHICULO': return '#73d13d'; // Green
-    case 'UBICACION': return '#9254de'; // Purple
-    case 'EVENTO': return '#ffa940'; // Orange
-    case 'CAUSA': return '#595959'; // Gray
+    case 'PERSONA': return '#ff4d4f';
+    case 'ORGANIZACION': return '#ffd666';
+    case 'TELEFONO': return '#40a9ff';
+    case 'VEHICULO': return '#73d13d';
+    case 'UBICACION': return '#9254de';
+    case 'EVENTO': return '#ffa940';
+    case 'CAUSA': return '#595959';
     default: return '#bfbfbf';
   }
 };
 
-const getEntityIcon = (type: EntityType) => {
-  switch (type) {
-    case 'PERSONA': return '👤';
-    case 'ORGANIZACION': return '👥';
-    case 'TELEFONO': return '📞';
-    case 'VEHICULO': return '🚗';
-    case 'UBICACION': return '📍';
-    case 'EVENTO': return '⚡';
-    case 'CAUSA': return '📁';
-    default: return '●';
-  }
-};
-
-// Component to load graph data into Sigma
 const GraphDataController = ({ minVerification }: { minVerification: string }) => {
   const { graph, importMockData } = useIntelligenceStore();
   const loadGraph = useLoadGraph();
@@ -51,12 +37,10 @@ const GraphDataController = ({ minVerification }: { minVerification: string }) =
   };
 
   useEffect(() => {
-    // Initialize with mock data if empty
     if (graph.order === 0) {
       importMockData();
     }
     
-    // Process graph for visualization with filtering
     graph.forEachNode((node, attributes) => {
       const nodeLevel = attributes.verificationLevel || 'SUGERIDO';
       const isVisible = levelValues[nodeLevel] >= levelValues[minVerification];
@@ -67,7 +51,6 @@ const GraphDataController = ({ minVerification }: { minVerification: string }) =
         graph.setNodeAttribute(node, 'size', attributes.entityType === 'PERSONA' ? 15 : 10);
         graph.setNodeAttribute(node, 'color', getEntityColor(attributes.entityType));
         graph.setNodeAttribute(node, 'label', attributes.label);
-        // Random initial positions for layout to work
         if (!attributes.x) graph.setNodeAttribute(node, 'x', Math.random());
         if (!attributes.y) graph.setNodeAttribute(node, 'y', Math.random());
       }
@@ -79,7 +62,6 @@ const GraphDataController = ({ minVerification }: { minVerification: string }) =
   return null;
 };
 
-// Event handlers for interactivity
 const GraphEventsController = ({ onNodeSelect }: { onNodeSelect: (id: string | null) => void }) => {
   const registerEvents = useRegisterEvents();
 
@@ -98,6 +80,7 @@ const LinkAnalysis = () => {
   const { syncWithSupabase: syncGeo } = useGeoStore();
   const [activePanel, setActivePanel] = useState<'info' | 'filters' | 'tools'>('info');
   const [minVerification, setMinVerification] = useState<string>('SUGERIDO');
+  const navigate = useNavigate();
 
   const verificationLevels = ['SUGERIDO', 'INFERIDO', 'VERIFICADO', 'JUDICIALIZADO', 'CONFIRMADO'];
 
@@ -117,7 +100,6 @@ const LinkAnalysis = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header / Toolbar */}
       <div className="glass-panel" style={styles.header}>
         <div style={styles.headerTitle}>
           <Network className="text-cyan" size={20} />
@@ -128,13 +110,8 @@ const LinkAnalysis = () => {
             <Search size={16} />
             <input type="text" placeholder="Buscar entidad, DNI, alias..." style={styles.input} />
           </div>
-          <button 
-            className="secondary-btn" 
-            onClick={handleSync} 
-            disabled={isLoading}
-            title="Sincronizar con Supabase"
-          >
-            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Cloud size={16} />}
+          <button className="secondary-btn" onClick={handleSync} disabled={isLoading}>
+            {isLoading ? <Zap size={16} className="animate-spin" /> : <Cloud size={16} />}
             Sincronizar
           </button>
           <button className="secondary-btn"><Share2 size={16} /> Exportar</button>
@@ -143,7 +120,6 @@ const LinkAnalysis = () => {
       </div>
 
       <div style={styles.mainContent}>
-        {/* Graph Canvas */}
         <div style={styles.graphWrapper} className="glass-panel">
           <SigmaContainer settings={{ allowInvalidContainer: true, labelFont: 'Inter' }} style={{ height: '100%', width: '100%' }}>
             <GraphDataController minVerification={minVerification} />
@@ -154,97 +130,82 @@ const LinkAnalysis = () => {
             </ControlsContainer>
           </SigmaContainer>
           
-          {/* Floating Controls Overlay */}
           <div style={styles.floatingControls}>
-            <button 
-              style={styles.controlBtn} 
-              className={activePanel === 'filters' ? 'active' : ''}
-              onClick={() => setActivePanel('filters')}
-            >
+            <button style={styles.controlBtn} className={activePanel === 'filters' ? 'active' : ''} onClick={() => setActivePanel('filters')}>
               <Filter size={20} />
             </button>
-            <button 
-              style={styles.controlBtn} 
-              className={activePanel === 'tools' ? 'active' : ''}
-              onClick={() => setActivePanel('tools')}
-            >
+            <button style={styles.controlBtn} className={activePanel === 'tools' ? 'active' : ''} onClick={() => setActivePanel('tools')}>
               <Layers size={20} />
             </button>
-            <button 
-              style={styles.controlBtn} 
-              className={activePanel === 'info' ? 'active' : ''}
-              onClick={() => setActivePanel('info')}
-            >
+            <button style={styles.controlBtn} className={activePanel === 'info' ? 'active' : ''} onClick={() => setActivePanel('info')}>
               <Info size={20} />
             </button>
           </div>
         </div>
 
-        {/* Right Detail / Options Panel */}
         <div style={styles.sidePanel} className="glass-panel">
           {activePanel === 'info' && (
             <div style={styles.panelContent}>
-              {selectedEntity ? (
-                <>
-                  <div style={styles.entityHeader}>
-                    <div style={{...styles.entityIcon, backgroundColor: getEntityColor(selectedEntity.entityType)}}>
-                      {getEntityIcon(selectedEntity.entityType)}
-                    </div>
-                    <div>
-                      <h3 style={{ margin: 0 }}>{selectedEntity.label}</h3>
-                      <span style={styles.entityTag}>{selectedEntity.entityType}</span>
-                    </div>
+            {selectedEntity ? (
+              <div style={styles.detailContent}>
+                <div style={styles.detailHeader}>
+                  <div style={styles.nodeIconLarge}>
+                    <Zap size={24} color="var(--primary-cyan)" />
                   </div>
+                  <div>
+                    <h4 style={styles.detailName}>{selectedEntity.label}</h4>
+                    <span className={`badge ${selectedEntity.verificationLevel === 'VERIFICADO' ? 'badge-cyan' : 'badge-yellow'}`}>
+                      {selectedEntity.verificationLevel}
+                    </span>
+                  </div>
+                </div>
 
-                  <div style={styles.detailsList}>
-                    <DetailItem label="ID" value={selectedEntity.id} icon={<FileText size={14} />} />
+                <div style={styles.deductiveSection}>
+                  <div style={styles.deductiveHeader}>
+                    <ShieldCheck size={14} color="var(--primary-cyan)" />
+                    <span>LÓGICA DEDUCTIVA</span>
+                  </div>
+                  <p style={styles.deductiveText}>
+                    Vínculo establecido por convergencia de {selectedEntity.id.includes('v-') ? 'testigos reservados' : 'registros técnicos'}. 
+                    Nivel de Certeza: {(selectedEntity as any).reliabilityScore || 7}/10.
+                  </p>
+                </div>
+
+                <div style={styles.detailsList}>
+                    <DetailItem label="ID" value={selectedEntity.id} icon={<Info size={14} />} />
                     <DetailItem label="Fuente" value={selectedEntity.source} icon={<Info size={14} />} />
                     <DetailItem label="Verificación" value={selectedEntity.verificationLevel || 'SUGERIDO'} icon={<ShieldCheck size={14} />} />
-                    <DetailItem label="Confiabilidad" value={`${selectedEntity.reliabilityScore || 5}/10`} icon={<FileCheck size={14} />} />
+                    <DetailItem label="Confiabilidad" value={`${selectedEntity.reliabilityScore || 5}/10`} icon={<AlertTriangle size={14} />} />
                     <DetailItem label="Clasificación" value={selectedEntity.classification} icon={<Layers size={14} />} />
-                    <DetailItem label="Creado" value={new Date(selectedEntity.createdAt).toLocaleDateString()} icon={<Calendar size={14} />} />
+                    <DetailItem label="Creado" value={new Date(selectedEntity.createdAt).toLocaleDateString()} icon={<Info size={14} />} />
                     
                     {selectedEntity.entityType === 'PERSONA' && (
                       <>
                         <div style={styles.sectionDivider}>Antropometría y Datos</div>
-                        <DetailItem 
-                          label="Aliases" 
-                          value={(selectedEntity as PersonEntity).aliases.join(', ') || 'N/A'} 
-                          icon={<User size={14} />} 
-                        />
-                        <DetailItem 
-                          label="Causas" 
-                          value={(selectedEntity as PersonEntity).criminalRecord.length.toString()} 
-                          icon={<FileText size={14} />} 
-                        />
+                        <DetailItem label="Aliases" value={(selectedEntity as PersonEntity).aliases.join(', ') || 'N/A'} icon={<Info size={14} />} />
+                        <DetailItem label="Causas" value={(selectedEntity as PersonEntity).criminalRecord.length.toString()} icon={<Info size={14} />} />
                       </>
                     )}
                   </div>
 
-                  <div style={styles.actionGrid}>
-                    <button className="primary-btn" style={{ width: '100%' }}>Ver Dossier Completo</button>
-                    <button className="secondary-btn" style={{ width: '100%' }}>Expandir Red</button>
-                  </div>
-                </>
-              ) : (
-                <div style={styles.emptyState}>
-                  <Network size={48} className="text-muted" opacity={0.3} />
-                  <p>Seleccione un nodo en el visor para analizar sus vínculos e información detallada.</p>
+                <div style={styles.detailActions}>
+                  <button className="primary-btn" onClick={() => navigate(`/inteligencia/${selectedEntity.entityType.toLowerCase()}/${selectedEntity.id}`)}>
+                    Ver Dossier Completo
+                  </button>
                 </div>
-              )}
+              </div>
+            ) : (
+              <div style={styles.emptyState}>
+                <Network size={48} className="text-muted" opacity={0.3} />
+                <p>Seleccione un nodo en el visor para analizar sus vínculos e información detallada.</p>
+              </div>
+            )}
             </div>
           )}
 
           {activePanel === 'filters' && (
             <div style={styles.panelContent}>
               <h3>Filtros de Inteligencia</h3>
-              <p className="text-muted">Filtrar entidades y vínculos en el visor.</p>
-              
-              <div style={styles.filterSection}>
-                <label style={styles.filterLabel}>Nivel de Confianza</label>
-                <input type="range" style={{ width: '100%' }} />
-              </div>
-
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Nivel Mínimo de Verificación</label>
                 <div style={styles.verificationSelector}>
@@ -277,8 +238,6 @@ const LinkAnalysis = () => {
           {activePanel === 'tools' && (
             <div style={styles.panelContent}>
               <h3>Herramientas SNA</h3>
-              <p className="text-muted">Social Network Analysis algorithms.</p>
-              
               <div style={styles.toolList}>
                 <ToolItem title="Comunidades (Louvain)" description="Detectar grupos dentro de la red." />
                 <ToolItem title="Intermediación" description="Encontrar puentes críticos entre delincuentes." />
@@ -292,7 +251,6 @@ const LinkAnalysis = () => {
   );
 };
 
-// Sub-components
 const DetailItem = ({ label, value, icon }: any) => (
   <div style={styles.detailItem}>
     <span style={styles.detailIcon}>{icon}</span>
@@ -407,30 +365,57 @@ const styles = {
     gap: '20px',
     padding: '40px'
   },
-  entityHeader: {
+  detailHeader: {
     display: 'flex',
     gap: '15px',
     alignItems: 'center',
-    marginBottom: '25px'
+    marginBottom: '20px'
   },
-  entityIcon: {
-    width: '50px',
-    height: '50px',
+  detailContent: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '10px'
+  },
+  detailName: {
+    margin: '0 0 5px 0',
+    fontSize: '1.2rem',
+    color: 'var(--text-bright)'
+  },
+  nodeIconLarge: {
+    width: '48px',
+    height: '48px',
     borderRadius: '12px',
+    background: 'rgba(0, 212, 255, 0.1)',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '1.5rem',
-    boxShadow: '0 8px 16px rgba(0,0,0,0.3)'
+    justifyContent: 'center'
   },
-  entityTag: {
-    fontSize: '0.75rem',
+  deductiveSection: {
+    background: 'rgba(0, 212, 255, 0.05)',
+    padding: '15px',
+    borderRadius: '10px',
+    border: '1px solid rgba(0, 212, 255, 0.1)',
+    marginBottom: '20px'
+  },
+  deductiveHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '0.7rem',
+    fontWeight: '800',
+    color: 'var(--primary-cyan)',
+    marginBottom: '8px',
+    letterSpacing: '0.5px'
+  },
+  deductiveText: {
+    fontSize: '0.85rem',
     color: 'var(--text-muted)',
-    background: 'rgba(255,255,255,0.05)',
-    padding: '2px 8px',
-    borderRadius: '4px',
-    marginTop: '4px',
-    display: 'inline-block'
+    lineHeight: '1.4',
+    margin: 0,
+    fontStyle: 'italic'
+  },
+  detailActions: {
+    marginTop: 'auto'
   },
   detailsList: {
     display: 'flex',
@@ -465,11 +450,6 @@ const styles = {
     borderBottom: '1px solid rgba(255,255,255,0.1)',
     paddingBottom: '5px',
     marginTop: '10px'
-  },
-  actionGrid: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '12px'
   },
   filterSection: {
     marginTop: '25px'

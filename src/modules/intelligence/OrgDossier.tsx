@@ -5,7 +5,7 @@ import type { OrgEntity } from '../../types/intelligenceTypes';
 import { 
   ArrowLeft, Users, 
   ExternalLink, User, Crown, Target, AlertCircle,
-  ShieldCheck, History
+  ShieldCheck, History, Download, Database
 } from 'lucide-react';
 
 const OrgDossier = () => {
@@ -30,17 +30,22 @@ const OrgDossier = () => {
           <div style={styles.avatarOrg}>
             <Users size={40} />
           </div>
-          <div style={styles.titleInfo}>
-            <h1 style={styles.name}>{org.label}</h1>
-            <div style={styles.subtitle}>
-              <span className={`badge ${org.verificationLevel === 'VERIFICADO' || org.verificationLevel === 'JUDICIALIZADO' ? 'badge-cyan' : 'badge-yellow'}`}>
-                {org.verificationLevel || 'SUGERIDO'}
-              </span>
-              <span style={styles.dotSeparator}>•</span>
-              <span className="badge badge-gray">{org.orgType}</span>
-              <span style={styles.dotSeparator}>•</span>
-              <span>Territorio: {org.territory || 'En disputa / No definido'}</span>
+          <div style={styles.titleAreaWrapper}>
+            <div style={styles.titleInfo}>
+              <h1 style={styles.name}>{org.label}</h1>
+              <div style={styles.subtitle}>
+                <span className={`badge ${org.verificationLevel === 'VERIFICADO' || org.verificationLevel === 'JUDICIALIZADO' ? 'badge-cyan' : 'badge-yellow'}`}>
+                  {org.verificationLevel || 'SUGERIDO'}
+                </span>
+                <span style={styles.dotSeparator}>•</span>
+                <span className="badge badge-gray">{org.orgType}</span>
+                <span style={styles.dotSeparator}>•</span>
+                <span>Territorio: {org.territory || 'En disputa / No definido'}</span>
+              </div>
             </div>
+            <button style={styles.exportBtn} onClick={() => window.print()}>
+              <Download size={16} /> Exportar Dossier Táctico
+            </button>
           </div>
         </div>
       </div>
@@ -114,6 +119,16 @@ const OrgDossier = () => {
             </div>
             <p style={styles.textSmall}>Métrica calculada basada en la convergencia de fuentes y verificaciones técnicas.</p>
           </div>
+
+          <div className="glass-panel" style={styles.sideCard}>
+            <h3 style={styles.sectionTitle}><Database size={18} /> Fuentes de Información</h3>
+            <div style={styles.sourceGrid}>
+              <SourceItem label="AIC / PDI" count={12} active />
+              <SourceItem label="911 / Incidencias" count={42} active />
+              <SourceItem label="CICO / SNA" count={5} active />
+              <SourceItem label="Testimonios" count={3} />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -144,6 +159,13 @@ const OrgDossier = () => {
     </div>
   );
 };
+
+const SourceItem = ({ label, count, active }: { label: string, count: number, active?: boolean }) => (
+  <div style={{...styles.sourceItem, opacity: active ? 1 : 0.5}}>
+    <div style={styles.sourceLabel}>{label}</div>
+    <div style={styles.sourceCount}>[{count}]</div>
+  </div>
+);
 
 const PhaseStep = ({ active, label, subtext }: { active: boolean, label: string, subtext: string }) => (
   <div style={{ ...styles.phaseStep, opacity: active ? 1 : 0.4 }}>
@@ -195,6 +217,27 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     color: '#ffd666'
+  },
+  titleAreaWrapper: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    width: '100%',
+    flex: 1
+  },
+  exportBtn: {
+    padding: '8px 16px',
+    background: 'var(--primary-cyan)',
+    color: 'black',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '0.8rem',
+    fontWeight: '700',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    cursor: 'pointer',
+    boxShadow: '0 0 15px rgba(0, 212, 255, 0.3)'
   },
   titleInfo: {
     display: 'flex',
@@ -445,6 +488,30 @@ const styles = {
     fontStyle: 'italic',
     textAlign: 'center' as const,
     padding: '20px'
+  },
+  sourceGrid: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '10px',
+    marginTop: '10px'
+  },
+  sourceItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 12px',
+    background: 'rgba(255,255,255,0.03)',
+    borderRadius: '6px',
+    border: '1px solid rgba(255,255,255,0.05)'
+  },
+  sourceLabel: {
+    fontSize: '0.8rem',
+    color: 'var(--text-main)'
+  },
+  sourceCount: {
+    fontSize: '0.75rem',
+    fontWeight: '700',
+    color: 'var(--primary-cyan)'
   }
 };
 

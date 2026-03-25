@@ -74,14 +74,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
       // Process Incident Distribution
       const typesMap: Record<string, number> = {};
-      const zonesMap: Record<string, number> = {
-        'Barranquitas': 0,
-        'San Pantaleón': 0,
-        'San Lorenzo': 0,
-        'Villa del Parque': 0,
-        'Otros': 0
-      };
-
       incidentData?.forEach(inc => {
         typesMap[inc.type] = (typesMap[inc.type] || 0) + 1;
         // Mock zone assignment based on lat/lng if we had neighborhood polygons, 
