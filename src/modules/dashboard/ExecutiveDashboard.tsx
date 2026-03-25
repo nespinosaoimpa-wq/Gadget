@@ -1,18 +1,19 @@
 import { useEffect } from 'react';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell
 } from 'recharts';
 import { 
   Users, 
   Activity, 
-  AlertCircle, 
+  AlertCircle,
   CheckCircle2, 
   Clock, 
   ArrowUpRight, 
-  ArrowDownRight 
+  ArrowDownRight
 } from 'lucide-react';
 import { useDashboardStore } from '../../store/dashboardStore';
+import PatternAnalysis from './PatternAnalysis';
 
 const ExecutiveDashboard = () => {
   const { kpis, crimeByType, crimeByZone, timeline, fetchDashboardData, loading } = useDashboardStore();
@@ -139,22 +140,7 @@ const ExecutiveDashboard = () => {
         </div>
 
         <div className="glass-panel" style={styles.trendCard}>
-          <h3 style={styles.chartTitle}>Tendencia Semanal de Incidentes</h3>
-          <div style={{ height: '200px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={kpis.weeklyTrend.map((val, i) => ({ day: i, val }))}>
-                <Line 
-                  type="monotone" 
-                  dataKey="val" 
-                  stroke="var(--primary-cyan)" 
-                  strokeWidth={3} 
-                  dot={{ fill: 'var(--primary-cyan)', r: 4 }} 
-                  activeDot={{ r: 6 }}
-                />
-                <Tooltip />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <PatternAnalysis />
         </div>
       </div>
     </div>

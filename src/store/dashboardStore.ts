@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 interface DashboardState {
   kpis: {
@@ -17,7 +18,7 @@ interface DashboardState {
   fetchDashboardData: () => Promise<void>;
 }
 
-export const useDashboardStore = create<DashboardState>((set) => ({
+export const useDashboardStore = create<DashboardState>((set, get) => ({
   kpis: {
     activeCases: 258,
     clearanceRate: 72,
@@ -49,17 +50,68 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   error: null,
 
   fetchDashboardData: async () => {
+    if (!isSupabaseConfigured()) return;
+
     set({ loading: true });
     try {
-      // En una implementación real, aquí haríamos consultas paralelas a Supabase
-      // query 1: count cases where status = 'active'
-      // query 2: calculate clearance rate
-      // query 3: count expired deadlines in legal_deadlines table
-      
-      // Simulamos un pequeño delay para demostrar el estado de carga
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      set({ loading: false });
+      // 1. Fetch Case Count
+      const { count: activeCasesCount } = await supabase
+        .from('intelligence_entities')
+        .select('*', { count: 'exact', head: true })
+        .eq('entity_type', 'CAUSA');
+
+      // 2. Fetch Incidents for Distribution
+      const { data: incidentData } = await supabase
+        .from('geo_incidents')
+        .select('type, severity, date');
+
+      // 3. Fetch Recent Intelligence Activity
+      const { data: recentEntities } = await supabase
+        .from('intelligence_entities')
+        .select('id, label, entity_type, created_at, verification_level')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Process Incident Distribution
+      const typesMap: Record<string, number> = {};
+      const zonesMap: Record<string, number> = {
+        'Barranquitas': 0,
+        'San Pantaleón': 0,
+        'San Lorenzo': 0,
+        'Villa del Parque': 0,
+        'Otros': 0
+      };
+
+      incidentData?.forEach(inc => {
+        typesMap[inc.type] = (typesMap[inc.type] || 0) + 1;
+        // Mock zone assignment based on lat/lng if we had neighborhood polygons, 
+        // for now we'll use a weighted random or metadata if we had it.
+      });
+
+      const typesList = Object.entries(typesMap).map(([type, count]) => ({
+        type,
+        count,
+        color: type === 'MICROTRAFICO' ? 'var(--accent-red)' : 'var(--primary-cyan)'
+      }));
+
+      // Process Timeline
+      const timelineData = recentEntities?.map(e => ({
+        id: e.id,
+        date: new Date(e.created_at).toLocaleString(),
+        event: `Entidad Actualizada: ${e.label} (${e.verification_level})`,
+        module: 'Inteligencia',
+        severity: (e.verification_level === 'CONFIRMADO' ? 'info' : 'warning') as any
+      })) || [];
+
+      set({ 
+        kpis: {
+          ...get().kpis,
+          activeCases: activeCasesCount || 0,
+        },
+        crimeByType: typesList.length > 0 ? typesList : get().crimeByType,
+        timeline: timelineData.length > 0 ? timelineData : get().timeline,
+        loading: false 
+      });
     } catch (error: any) {
       set({ error: error.message, loading: false });
     }

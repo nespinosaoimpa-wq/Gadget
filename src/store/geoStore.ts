@@ -333,7 +333,14 @@ export const useGeoStore = create<GeoState>((set, get) => ({
         ],
         color: '#ff4d4f',
         active: true,
-        metadata: { prioridad: 'ALTA', informe: 'Ref. info N°047_25', banda: 'La Negrada' }
+        metadata: { 
+          prioridad: 'CRÍTICA', 
+          informe: 'INT-BCA-2026-004', 
+          banda: 'La Negrada',
+          contexto: 'Eje de alta conflictividad por control de puntos de acopio en Artigas y Gaboto. Se registra desplazamiento forzado de familias y uso de sicariato para "ablande" de comercios locales. El nodo Bordon opera como nexo logístico en este sector.',
+          puntosCriticos: 'Artigas y Gaboto, Centenera 4511',
+          ultimoHito: 'Operativo "Barranquitas Limpio" (Diciembre 2025)'
+        }
       },
       {
         id: 'z2',
@@ -347,7 +354,13 @@ export const useGeoStore = create<GeoState>((set, get) => ({
         ],
         color: '#faad14',
         active: true,
-        metadata: { banda: 'Los de Siempre', territorio: 'San Pantaleón' }
+        metadata: { 
+          banda: 'Los de Siempre', 
+          territorio: 'San Pantaleón',
+          contexto: 'Zona de expansión territorial. Se observa una mutación del modus operandi: de robos calificados a microtráfico estático. Conflicto latente con remanentes de "Los Millonarios".',
+          puntosCriticos: 'Pasaje Irala, Intercepción 9 de Julio',
+          prioridad: 'ALTA'
+        }
       },
       {
         id: 'z3',
@@ -361,7 +374,12 @@ export const useGeoStore = create<GeoState>((set, get) => ({
         ],
         color: '#fa541c',
         active: true,
-        metadata: { banda: 'Aceiteros', operacion: 'Castañaduy 6807' }
+        metadata: { 
+          banda: 'Aceiteros (Leguizamón)', 
+          operacion: 'Castañaduy 6807',
+          contexto: 'Estructura familiar piramidal. Utilizan empresas de fachada para lavado de activos de baja escala. Se detectó flujo de telefonía desde unidades penitenciarias hacia este sector.',
+          prioridad: 'MEDIA-ALTA'
+        }
       }
     ];
 

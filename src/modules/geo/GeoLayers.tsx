@@ -3,6 +3,7 @@ import { Marker, Popup, Polygon } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { useGeoStore } from '../../store/geoStore';
+import type { GeoZone } from '../../types/geoTypes';
 
 // Fix for default marker icons in Leaflet + React
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -39,7 +40,7 @@ const createCustomIcon = (type: string) => {
   });
 };
 
-const GeoLayers = () => {
+const GeoLayers = ({ onZoneSelect }: { onZoneSelect: (zone: GeoZone) => void }) => {
   const { incidents, zones, layers, filters } = useGeoStore();
 
   // Filter incidents based on store filters
@@ -105,11 +106,15 @@ const GeoLayers = () => {
             weight: 2,
             dashArray: '5, 5'
           }}
+          eventHandlers={{
+            click: () => onZoneSelect(zone)
+          }}
         >
           <Popup>
-            <strong>{zone.name}</strong><br />
-            Tipo: {zone.type}<br />
-            {zone.metadata?.banda && `Control: ${zone.metadata.banda}`}
+            <div style={{ padding: '5px' }}>
+              <strong>{zone.name}</strong><br />
+              <span style={{ fontSize: '0.75rem', color: '#666' }}>Tipo: {zone.type}</span>
+            </div>
           </Popup>
         </Polygon>
       ))}

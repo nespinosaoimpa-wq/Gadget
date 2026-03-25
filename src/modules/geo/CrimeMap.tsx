@@ -7,6 +7,8 @@ import GeoLayers from './GeoLayers';
 import GeoControls from './GeoControls';
 import TimelinePlayer from './TimelinePlayer';
 import ZoneManager from './ZoneManager';
+import NeighborhoodProfile from './NeighborhoodProfile';
+import type { GeoZone } from '../../types/geoTypes';
 import { 
   Layers, 
   Activity, 
@@ -20,6 +22,7 @@ const CrimeMap = () => {
   const { importMockGeoData } = useGeoStore();
   const [activePanel, setActivePanel] = useState<'layers' | 'filters' | 'zones' | 'stats'>('layers');
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+  const [selectedZone, setSelectedZone] = useState<GeoZone | null>(null);
 
   useEffect(() => {
     importMockGeoData();
@@ -96,8 +99,16 @@ const CrimeMap = () => {
           <ZoomControl position="bottomright" />
           
           {/* Custom Geo Layers */}
-          <GeoLayers />
+          <GeoLayers onZoneSelect={setSelectedZone} />
         </MapContainer>
+
+        {/* Neighborhood Analytics Overlay */}
+        {selectedZone && (
+          <NeighborhoodProfile 
+            zone={selectedZone} 
+            onClose={() => setSelectedZone(null)} 
+          />
+        )}
 
         {/* Timeline Overlay */}
         {isTimelineOpen && (
