@@ -39,6 +39,19 @@ const OrgDossier = () => {
           </div>
         </div>
       </div>
+      
+      {/* Investigation Protocol Status */}
+      <div className="glass-panel" style={styles.protocolBanner}>
+        <div style={styles.protocolHeader}>
+          <Target size={20} color="var(--primary-cyan)" />
+          <h3 style={{ margin: 0, fontSize: '1rem' }}>Protocolo de Priorización: Fase {org.metadata?.investigationPhase || 1}</h3>
+        </div>
+        <div style={styles.phaseSteps}>
+          <PhaseStep active={true} label="Mapeo Territorial" subtext="Incidencias 911 / Puntos de Venta" />
+          <PhaseStep active={(org.metadata?.investigationPhase || 1) >= 2} label="Individualización" subtext="Identificación de Objetivos (SNA)" />
+          <PhaseStep active={(org.metadata?.investigationPhase || 1) >= 3} label="Priorización Táctica" subtext="Documentación para Allanamientos" />
+        </div>
+      </div>
 
       <div style={styles.grid}>
         {/* Hierarchy Section */}
@@ -90,6 +103,16 @@ const OrgDossier = () => {
     </div>
   );
 };
+
+const PhaseStep = ({ active, label, subtext }: { active: boolean, label: string, subtext: string }) => (
+  <div style={{ ...styles.phaseStep, opacity: active ? 1 : 0.4 }}>
+    <div style={{ ...styles.phaseIndicator, background: active ? 'var(--primary-cyan)' : 'rgba(255,255,255,0.1)' }} />
+    <div style={styles.phaseInfo}>
+      <div style={styles.phaseLabel}>{label}</div>
+      <div style={styles.phaseSubtext}>{subtext}</div>
+    </div>
+  </div>
+);
 
 const styles = {
   container: {
@@ -248,6 +271,50 @@ const styles = {
     padding: '10px',
     background: 'rgba(255, 214, 102, 0.1)',
     borderRadius: '8px'
+  },
+  protocolBanner: {
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '15px',
+    borderLeft: '4px solid var(--primary-cyan)'
+  },
+  protocolHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px'
+  },
+  phaseSteps: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gap: '20px',
+    marginTop: '10px'
+  },
+  phaseStep: {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'flex-start'
+  },
+  phaseIndicator: {
+    width: '12px',
+    height: '12px',
+    borderRadius: '50%',
+    marginTop: '4px',
+    boxShadow: '0 0 10px rgba(0,212,255,0.3)'
+  },
+  phaseInfo: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2px'
+  },
+  phaseLabel: {
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    color: 'var(--text-main)'
+  },
+  phaseSubtext: {
+    fontSize: '0.75rem',
+    color: 'var(--text-muted)'
   }
 };
 

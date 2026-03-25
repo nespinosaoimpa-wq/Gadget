@@ -4,6 +4,8 @@ import MainLayout from './layouts/MainLayout';
 import Login from './auth/Login';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
+import { useIntelligenceStore } from './store/intelligenceStore';
+import { useGeoStore } from './store/geoStore';
 import './index.css';
 import type { Session } from '@supabase/supabase-js';
 
@@ -29,21 +31,35 @@ const LoadingFallback = () => (
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { fetchIntelligence, importMockData } = useIntelligenceStore();
+  const { fetchIncidents } = useGeoStore();
 
   useEffect(() => {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      
+      if (session || !isSupabaseConfigured()) {
+        fetchIntelligence().then(() => {
+          const { entities } = useIntelligenceStore.getState();
+          if (entities.size === 0) importMockData();
+        });
+        fetchIncidents();
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) {
+        fetchIntelligence();
+        fetchIncidents();
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [fetchIntelligence, fetchIncidents, importMockData]);
 
   // In demo mode or if guest access is enabled, allow access
   let isGuest = false;

@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { SigmaContainer, useLoadGraph, useRegisterEvents, ControlsContainer, ZoomControl, FullScreenControl } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
 import { useIntelligenceStore } from '../../store/intelligenceStore';
+import { useGeoStore } from '../../store/geoStore';
 import type { EntityType, PersonEntity } from '../../types/intelligenceTypes';
 import { 
   Network, Search, Filter, Info, Layers, 
-  Share2, Settings,
-  User, Calendar, FileText
+  Share2, Settings, Cloud,
+  User, Calendar, FileText, Loader2
 } from 'lucide-react';
 
 // Custom Node Renderer or styling logic
@@ -78,8 +79,19 @@ const GraphEventsController = ({ onNodeSelect }: { onNodeSelect: (id: string | n
 };
 
 const LinkAnalysis = () => {
-  const { entities, selectedEntityId, selectEntity } = useIntelligenceStore();
+  const { entities, selectedEntityId, selectEntity, syncWithSupabase, isLoading } = useIntelligenceStore();
+  const { syncWithSupabase: syncGeo } = useGeoStore();
   const [activePanel, setActivePanel] = useState<'info' | 'filters' | 'tools'>('info');
+
+  const handleSync = async () => {
+    try {
+      await syncWithSupabase();
+      await syncGeo();
+      alert('Datos sincronizados con éxito en Supabase.');
+    } catch (err) {
+      alert('Error al sincronizar datos.');
+    }
+  };
 
   const selectedEntity = useMemo(() => 
     selectedEntityId ? entities.get(selectedEntityId) : null
@@ -98,6 +110,15 @@ const LinkAnalysis = () => {
             <Search size={16} />
             <input type="text" placeholder="Buscar entidad, DNI, alias..." style={styles.input} />
           </div>
+          <button 
+            className="secondary-btn" 
+            onClick={handleSync} 
+            disabled={isLoading}
+            title="Sincronizar con Supabase"
+          >
+            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Cloud size={16} />}
+            Sincronizar
+          </button>
           <button className="secondary-btn"><Share2 size={16} /> Exportar</button>
           <button className="primary-btn"><Settings size={16} /> Analizar</button>
         </div>

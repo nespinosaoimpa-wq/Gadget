@@ -22,6 +22,7 @@ interface GeoState {
   fetchZones: () => Promise<void>;
   saveIncident: (incident: Omit<CrimeIncident, 'id'>) => Promise<void>;
   saveZone: (zone: Omit<GeoZone, 'id'>) => Promise<void>;
+  syncWithSupabase: () => Promise<void>;
 }
 
 export const useGeoStore = create<GeoState>((set, get) => ({
@@ -176,6 +177,70 @@ export const useGeoStore = create<GeoState>((set, get) => ({
       return;
     }
     await get().fetchZones();
+  },
+
+  syncWithSupabase: async () => {
+    const { incidents, zones } = get();
+    if (incidents.length === 0 && zones.length === 0) return;
+
+    set({ loading: true });
+    try {
+      if (incidents.length > 0) {
+        const incidentPayload = incidents.map(inc => ({
+          id: inc.id.startsWith('geo-') || inc.id.startsWith('inc-') ? undefined : inc.id,
+          lat: inc.lat,
+          lng: inc.lng,
+          type: inc.type,
+          date: inc.date,
+          description: inc.description,
+          severity: inc.severity,
+          classification: inc.classification,
+          case_id: inc.caseId
+        }));
+
+        const { error: incError } = await supabase
+          .from('geo_incidents')
+          .upsert(incidentPayload.filter(p => p.id), { onConflict: 'id' });
+        
+        // For new ones (mock IDs), we might want to insert without ID to let Supabase generate UUIDs
+        const newIncidents = incidentPayload.filter(p => !p.id);
+        if (newIncidents.length > 0) {
+          const { error: newIncError } = await supabase
+            .from('geo_incidents')
+            .insert(newIncidents.map(({ id, ...rest }) => rest));
+          if (newIncError) throw newIncError;
+        }
+
+        if (incError) throw incError;
+      }
+
+      if (zones.length > 0) {
+        const zonePayload = zones.map(z => ({
+          id: z.id.startsWith('z') ? undefined : z.id,
+          name: z.name,
+          type: z.type,
+          polygon: z.polygon,
+          color: z.color,
+          active: z.active,
+          metadata: z.metadata
+        }));
+
+        const { error: zoneError } = await supabase
+          .from('geo_zones')
+          .upsert(zonePayload.filter(p => p.id), { onConflict: 'id' });
+
+        const newZones = zonePayload.filter(p => !p.id);
+        if (newZones.length > 0) {
+          await supabase.from('geo_zones').insert(newZones.map(({ id, ...rest }) => rest));
+        }
+
+        if (zoneError) throw zoneError;
+      }
+    } catch (err) {
+      console.error('Error syncing geo data:', err);
+    } finally {
+      set({ loading: false });
+    }
   },
 
   importMockGeoData: () => {
