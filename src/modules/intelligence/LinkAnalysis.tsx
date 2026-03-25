@@ -6,7 +6,7 @@ import { useGeoStore } from '../../store/geoStore';
 import type { EntityType, PersonEntity } from '../../types/intelligenceTypes';
 import { 
   Network, Search, Filter, Info, Layers, 
-  Share2, Settings, Cloud,
+  Share2, Settings, Cloud, ShieldCheck, FileCheck,
   User, Calendar, FileText, Loader2
 } from 'lucide-react';
 
@@ -38,9 +38,17 @@ const getEntityIcon = (type: EntityType) => {
 };
 
 // Component to load graph data into Sigma
-const GraphDataController = () => {
+const GraphDataController = ({ minVerification }: { minVerification: string }) => {
   const { graph, importMockData } = useIntelligenceStore();
   const loadGraph = useLoadGraph();
+
+  const levelValues: Record<string, number> = {
+    'SUGERIDO': 1,
+    'INFERIDO': 2,
+    'VERIFICADO': 3,
+    'JUDICIALIZADO': 4,
+    'CONFIRMADO': 5
+  };
 
   useEffect(() => {
     // Initialize with mock data if empty
@@ -48,18 +56,25 @@ const GraphDataController = () => {
       importMockData();
     }
     
-    // Process graph for visualization
+    // Process graph for visualization with filtering
     graph.forEachNode((node, attributes) => {
-      graph.setNodeAttribute(node, 'size', attributes.entityType === 'PERSONA' ? 15 : 10);
-      graph.setNodeAttribute(node, 'color', getEntityColor(attributes.entityType));
-      graph.setNodeAttribute(node, 'label', attributes.label);
-      // Random initial positions for layout to work
-      if (!attributes.x) graph.setNodeAttribute(node, 'x', Math.random());
-      if (!attributes.y) graph.setNodeAttribute(node, 'y', Math.random());
+      const nodeLevel = attributes.verificationLevel || 'SUGERIDO';
+      const isVisible = levelValues[nodeLevel] >= levelValues[minVerification];
+      
+      graph.setNodeAttribute(node, 'hidden', !isVisible);
+      
+      if (isVisible) {
+        graph.setNodeAttribute(node, 'size', attributes.entityType === 'PERSONA' ? 15 : 10);
+        graph.setNodeAttribute(node, 'color', getEntityColor(attributes.entityType));
+        graph.setNodeAttribute(node, 'label', attributes.label);
+        // Random initial positions for layout to work
+        if (!attributes.x) graph.setNodeAttribute(node, 'x', Math.random());
+        if (!attributes.y) graph.setNodeAttribute(node, 'y', Math.random());
+      }
     });
 
     loadGraph(graph);
-  }, [graph, loadGraph, importMockData]);
+  }, [graph, loadGraph, importMockData, minVerification]);
 
   return null;
 };
@@ -82,6 +97,9 @@ const LinkAnalysis = () => {
   const { entities, selectedEntityId, selectEntity, syncWithSupabase, isLoading } = useIntelligenceStore();
   const { syncWithSupabase: syncGeo } = useGeoStore();
   const [activePanel, setActivePanel] = useState<'info' | 'filters' | 'tools'>('info');
+  const [minVerification, setMinVerification] = useState<string>('SUGERIDO');
+
+  const verificationLevels = ['SUGERIDO', 'INFERIDO', 'VERIFICADO', 'JUDICIALIZADO', 'CONFIRMADO'];
 
   const handleSync = async () => {
     try {
@@ -128,7 +146,7 @@ const LinkAnalysis = () => {
         {/* Graph Canvas */}
         <div style={styles.graphWrapper} className="glass-panel">
           <SigmaContainer settings={{ allowInvalidContainer: true, labelFont: 'Inter' }} style={{ height: '100%', width: '100%' }}>
-            <GraphDataController />
+            <GraphDataController minVerification={minVerification} />
             <GraphEventsController onNodeSelect={selectEntity} />
             <ControlsContainer position={'bottom-right'}>
               <ZoomControl />
@@ -181,6 +199,8 @@ const LinkAnalysis = () => {
                   <div style={styles.detailsList}>
                     <DetailItem label="ID" value={selectedEntity.id} icon={<FileText size={14} />} />
                     <DetailItem label="Fuente" value={selectedEntity.source} icon={<Info size={14} />} />
+                    <DetailItem label="Verificación" value={selectedEntity.verificationLevel || 'SUGERIDO'} icon={<ShieldCheck size={14} />} />
+                    <DetailItem label="Confiabilidad" value={`${selectedEntity.reliabilityScore || 5}/10`} icon={<FileCheck size={14} />} />
                     <DetailItem label="Clasificación" value={selectedEntity.classification} icon={<Layers size={14} />} />
                     <DetailItem label="Creado" value={new Date(selectedEntity.createdAt).toLocaleDateString()} icon={<Calendar size={14} />} />
                     
@@ -223,6 +243,25 @@ const LinkAnalysis = () => {
               <div style={styles.filterSection}>
                 <label style={styles.filterLabel}>Nivel de Confianza</label>
                 <input type="range" style={{ width: '100%' }} />
+              </div>
+
+              <div style={styles.filterSection}>
+                <label style={styles.filterLabel}>Nivel Mínimo de Verificación</label>
+                <div style={styles.verificationSelector}>
+                  {verificationLevels.map(level => (
+                    <button 
+                      key={level}
+                      style={{
+                        ...styles.levelBtn,
+                        backgroundColor: minVerification === level ? 'var(--primary-cyan)' : 'rgba(255,255,255,0.05)',
+                        color: minVerification === level ? 'black' : 'white'
+                      }}
+                      onClick={() => setMinVerification(level)}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div style={styles.filterSection}>
@@ -453,6 +492,22 @@ const styles = {
     width: '8px',
     height: '8px',
     borderRadius: '50%'
+  },
+  verificationSelector: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: '8px',
+    marginTop: '10px'
+  },
+  levelBtn: {
+    fontSize: '0.65rem',
+    padding: '4px 8px',
+    borderRadius: '4px',
+    border: 'none',
+    cursor: 'pointer',
+    fontWeight: '700',
+    textTransform: 'uppercase' as const,
+    transition: 'all 0.2s ease'
   },
   toolList: {
     display: 'flex',

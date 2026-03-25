@@ -24,6 +24,7 @@ export const runLinkEnrichment = (entities: AnyEntity[]): GraphEdge[] => {
           target: p2.id,
           relationType: 'CO_IMPUTADO' as RelationType,
           confidence: 0.9,
+          verificationLevel: 'INFERIDO',
           sourceInfo: `Automático: Co-imputados en ${commonCausas.length} causa(s)`,
           dateDetected: new Date().toISOString()
         });

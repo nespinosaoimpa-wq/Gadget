@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import Graph from 'graphology';
 import { supabase } from '../lib/supabaseClient';
-import type { AnyEntity, GraphEdge, PersonEntity, VehicleEntity, OrgEntity, LocationEntity } from '../types/intelligenceTypes';
+import type { AnyEntity, GraphEdge, PersonEntity, OrgEntity } from '../types/intelligenceTypes';
 
 interface IntelligenceState {
   graph: Graph;
@@ -76,6 +76,10 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
           label: row.label,
           source: row.source,
           classification: row.classification,
+          verificationLevel: row.verification_level || 'SUGERIDO',
+          reliabilityScore: row.reliability_score || 5,
+          analyticalNotes: row.analytical_notes,
+          milestones: row.milestones || [],
           createdAt: row.created_at,
           metadata: row.metadata || {},
           ...row.data // Spread entity-specific data (dni, aliases, hierarchy, etc.)
@@ -91,6 +95,7 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
         target: row.target_id,
         relationType: row.relation_type,
         confidence: row.confidence,
+        verificationLevel: row.verification_level || 'SUGERIDO',
         sourceInfo: row.source_info,
         dateDetected: row.date_detected,
         metadata: row.metadata || {}
@@ -122,11 +127,15 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
         label: e.label,
         source: e.source,
         classification: e.classification,
+        verification_level: e.verificationLevel,
+        reliability_score: e.reliabilityScore,
+        analytical_notes: e.analyticalNotes,
+        milestones: e.milestones || [],
         metadata: e.metadata || {},
         data: {
           ...Object.fromEntries(
             Object.entries(e).filter(([key]) => 
-              !['id', 'entityType', 'label', 'source', 'classification', 'metadata', 'createdAt'].includes(key)
+              !['id', 'entityType', 'label', 'source', 'classification', 'metadata', 'createdAt', 'verificationLevel', 'reliabilityScore', 'analyticalNotes', 'milestones'].includes(key)
             )
           )
         }
@@ -145,6 +154,7 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
         target_id: e.target,
         relation_type: e.relationType,
         confidence: e.confidence,
+        verification_level: e.verificationLevel,
         source_info: e.sourceInfo,
         date_detected: e.dateDetected,
         metadata: e.metadata || {}
@@ -175,10 +185,16 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
         territory: 'Barrio Barranquitas / Villa del Parque',
         source: 'MPA-SANTA-FE',
         classification: 'RESERVADO',
+        verificationLevel: 'VERIFICADO',
+        reliabilityScore: 8,
         createdAt: new Date().toISOString(),
         hierarchy: [
           { personId: 'pn-zabala-jon', rank: 'JEFE', role: 'Líder Operativo' },
           { personId: 'tp-bordon', rank: 'SEGUNDO', role: 'Logística Armas' }
+        ],
+        milestones: [
+          { id: 'm1', type: 'IDENTIFICACION', date: '2025-06-15', description: 'Identificación inicial tras homicidios en Barranquitas', verifiedBy: 'Analista 01' },
+          { id: 'm2', type: 'ANALISIS_SNA', date: '2025-12-20', description: 'Mapeo de red con 12 nodos vinculados', verifiedBy: 'SIGIC Core' }
         ]
       },
       {
@@ -189,51 +205,11 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
         territory: 'San Pantaleón / San Lorenzo',
         source: 'TRI-SANTA-FE',
         classification: 'RESERVADO',
-        createdAt: new Date().toISOString(),
-        hierarchy: []
-      },
-      {
-        id: 'org-correntino',
-        entityType: 'ORGANIZACION',
-        label: 'Banda Correntino',
-        orgType: 'BANDA',
-        territory: 'Sante Fe Capital / Conexión Corrientes',
-        source: 'INTELIGENCIA-SF',
-        classification: 'CONFIDENCIAL',
-        createdAt: new Date().toISOString(),
-        hierarchy: []
-      },
-      {
-        id: 'org-aceitero',
-        entityType: 'ORGANIZACION',
-        label: 'El Aceitero (Clan Leguizamón)',
-        orgType: 'CLAN',
-        territory: 'Zona Norte / Recreo',
-        source: 'DGI-SANTA-FE',
-        classification: 'CONFIDENCIAL',
+        verificationLevel: 'INFERIDO',
+        reliabilityScore: 6,
         createdAt: new Date().toISOString(),
         hierarchy: []
       }
-    ];
-
-    // PERSONAS - LA NEGRADA
-    const personasNegrada: PersonEntity[] = [
-      { id: 'pn-zabala-jon', entityType: 'PERSONA', label: 'Zabala Jon Nelson', aliases: ['Jon'], criminalRecord: ['exp-2025-01'], source: 'Dossier Microtráfico', classification: 'CONFIDENCIAL', createdAt: new Date().toISOString() },
-      { id: 'pn-bergallo-ig', entityType: 'PERSONA', label: 'Bergallo Ignacio', aliases: ['Nacho'], source: 'Dossier Microtráfico', classification: 'RESERVADO', createdAt: new Date().toISOString(), criminalRecord: [] },
-      { id: 'pn-rios-cam', entityType: 'PERSONA', label: 'Rios Camila', source: 'Dossier Microtráfico', classification: 'RESERVADO', createdAt: new Date().toISOString(), aliases: [], criminalRecord: [] },
-    ];
-
-    // PERSONAS - LOS DE SIEMPRE
-    const personasSiempre: PersonEntity[] = [
-      { id: 'ps-celer-walter', entityType: 'PERSONA', label: 'Celer Walter Damian', aliases: ['Celer'], source: 'Dossier Microtráfico', classification: 'CONFIDENCIAL', createdAt: new Date().toISOString(), criminalRecord: [] },
-      { id: 'ps-pasculli-bruno', entityType: 'PERSONA', label: 'Bruno Pasculli', source: 'Dossier Microtráfico', classification: 'RESERVADO', createdAt: new Date().toISOString(), aliases: [], criminalRecord: [] },
-      { id: 'ps-leiva-brian', entityType: 'PERSONA', label: 'Leiva Brian', source: 'Dossier Microtráfico', classification: 'RESERVADO', createdAt: new Date().toISOString(), aliases: [], criminalRecord: [] },
-    ];
-
-    // PERSONAS - OTRAS BANDAS
-    const personasOtras: PersonEntity[] = [
-      { id: 'po-alviso-pri', entityType: 'PERSONA', label: 'Alviso Priscila Daiana', source: 'Banda Correntino', classification: 'CONFIDENCIAL', createdAt: new Date().toISOString(), aliases: [], criminalRecord: [] },
-      { id: 'po-leguizamon-dar', entityType: 'PERSONA', label: 'Leguizamon Dardo Gabriel', aliases: ['Aceitero'], source: 'Aceiteros', classification: 'CONFIDENCIAL', createdAt: new Date().toISOString(), criminalRecord: [] },
     ];
 
     // PERSONAS - TARGETS PRIORITARIOS (BARRANQUITAS)
@@ -245,9 +221,15 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
         aliases: ['Bordon'], 
         source: 'SEGUNDO INFORME - Bca', 
         classification: 'CONFIDENCIAL', 
+        verificationLevel: 'VERIFICADO',
+        reliabilityScore: 9,
         createdAt: new Date().toISOString(), 
         criminalRecord: [],
-        metadata: { investigationPhase: 2, priority: 'ALTA', neighborhood: 'Barranquitas' }
+        metadata: { investigationPhase: 2, priority: 'ALTA', neighborhood: 'Barranquitas' },
+        milestones: [
+          { id: 'm1-b', type: 'VIGILANCIA', date: '2025-12-23', description: 'Observado en punto de venta Artigas y Gaboto', verifiedBy: 'PDI SF' },
+          { id: 'm2-b', type: 'IDENTIFICACION', date: '2025-12-30', description: 'Confirmado por testigos de identidad reservada', verifiedBy: 'Ministerio Público' }
+        ]
       },
       { 
         id: 'tp-cueva', 
@@ -256,89 +238,41 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
         aliases: ['Cueva'], 
         source: 'SEGUNDO INFORME - Bca', 
         classification: 'CONFIDENCIAL', 
+        verificationLevel: 'INFERIDO',
+        reliabilityScore: 7,
         createdAt: new Date().toISOString(), 
         criminalRecord: [],
         metadata: { investigationPhase: 2, priority: 'ALTA', neighborhood: 'Barranquitas' }
-      },
-      { 
-        id: 'tp-ali', 
-        entityType: 'PERSONA', 
-        label: 'Ali', 
-        aliases: ['Ali'], 
-        source: 'SEGUNDO INFORME - Bca', 
-        classification: 'CONFIDENCIAL', 
-        createdAt: new Date().toISOString(), 
-        criminalRecord: [],
-        metadata: { investigationPhase: 2, priority: 'MEDIA', neighborhood: 'Barranquitas' }
       }
     ];
 
-    // VEHICULOS
-    const vehicles: VehicleEntity[] = [
-      { id: 'v1', entityType: 'VEHICULO', label: 'Honda Tornado (123 ABC)', plate: '123ABC', make: 'Honda', model: 'Tornado', color: 'Rojo/Blanco', source: 'LPR-BARRANQUITAS', createdAt: new Date().toISOString(), classification: 'USO INTERNO' },
-      { id: 'v3', entityType: 'VEHICULO', label: 'Prisma Blanco (AD 165 RV)', plate: 'AD165RV', make: 'Chevrolet', model: 'Prisma', color: 'Blanco', source: 'Polaco Maidana', createdAt: new Date().toISOString(), classification: 'RESERVADO' },
-    ];
-
-    // UBICACIONES TACTICAS (PUNTOS DE VENTA / ACOPIO)
-    const tacticLocations: LocationEntity[] = [
-      {
-        id: 'loc-artigas-gaboto',
-        entityType: 'UBICACION',
-        label: 'Artigas y Gaboto',
-        address: 'Artigas esquina Gaboto, Santa Fe',
-        locationType: 'PUNTO_VENTA',
-        lat: -31.6265,
-        lng: -60.7180,
-        source: 'PRIMER INFORME - Bca',
-        classification: 'CONFIDENCIAL',
-        createdAt: new Date().toISOString(),
-        metadata: { hotSpot: true, priorityReport: 'R-237080-25' }
-      },
-      {
-        id: 'loc-centenera-4511',
-        entityType: 'UBICACION',
-        label: 'Centenera 4511',
-        address: 'Centenera 4511, Santa Fe',
-        locationType: 'AGUANTADERO',
-        lat: -31.6240,
-        lng: -60.7195,
-        source: 'PRIMER INFORME - Bca',
-        classification: 'CONFIDENCIAL',
-        createdAt: new Date().toISOString(),
-        metadata: { stashHouse: true }
-      }
-    ];
-
-    const allEntities = [
-      ...organizations, 
-      ...personasNegrada, 
-      ...personasSiempre, 
-      ...personasOtras, 
-      ...targetsBarranquitas, 
-      ...vehicles, 
-      ...tacticLocations
-    ];
+    const allEntities = [...organizations, ...targetsBarranquitas];
     allEntities.forEach(e => addEntity(e as AnyEntity));
 
     // VINCULOS
-    const baseEdges: GraphEdge[] = [
-      { id: 'e-neg-1', source: 'pn-zabala-jon', target: 'org-negrada', relationType: 'MIEMBRO_DE', confidence: 0.95, sourceInfo: 'Dossier', dateDetected: '2025-12-01' },
-      { id: 'e-neg-2', source: 'tp-bordon', target: 'org-negrada', relationType: 'MIEMBRO_DE', confidence: 0.8, sourceInfo: 'Dossier', dateDetected: '2025-12-01' },
-      { id: 'e-sie-1', source: 'ps-celer-walter', target: 'org-siempre', relationType: 'MIEMBRO_DE', confidence: 0.9, sourceInfo: 'Dossier', dateDetected: '2025-12-01' },
-      { id: 'e-cor-1', source: 'po-alviso-pri', target: 'org-correntino', relationType: 'MIEMBRO_DE', confidence: 0.9, sourceInfo: 'Dossier', dateDetected: '2025-12-01' },
-      { id: 'e-ace-1', source: 'po-leguizamon-dar', target: 'org-aceitero', relationType: 'MIEMBRO_DE', confidence: 0.95, sourceInfo: 'Dossier', dateDetected: '2025-12-01' },
-      { id: 'e-conf-1', source: 'org-negrada', target: 'org-siempre', relationType: 'VINCULADO_A', confidence: 0.9, sourceInfo: 'Cruce de Incidencias 2026', dateDetected: '2026-01-10' },
-      { id: 'ev-1', source: 'pn-zabala-jon', target: 'v1', relationType: 'ASOCIADO_CON', confidence: 0.8, sourceInfo: 'Visualización', dateDetected: '2025-12-20' },
-      { id: 'ev-2', source: 'po-leguizamon-dar', target: 'v3', relationType: 'PROPIETARIO', confidence: 0.95, sourceInfo: 'Registro', dateDetected: '2025-11-15' },
+    const edges: GraphEdge[] = [
+      { 
+        id: 'e-neg-2', 
+        source: 'tp-bordon', 
+        target: 'org-negrada', 
+        relationType: 'MIEMBRO_DE', 
+        confidence: 0.8, 
+        verificationLevel: 'VERIFICADO',
+        sourceInfo: 'Fuerzas de Seguridad / Informantes', 
+        dateDetected: '2025-12-01' 
+      },
+      { 
+        id: 'e-conf-1', 
+        source: 'org-negrada', 
+        target: 'org-siempre', 
+        relationType: 'VINCULADO_A', 
+        confidence: 0.9, 
+        verificationLevel: 'INFERIDO',
+        sourceInfo: 'Cruce de Incidencias 2026', 
+        dateDetected: '2026-01-10' 
+      }
     ];
 
-    const tacticEdges: GraphEdge[] = [
-      { id: 'et-1', source: 'tp-bordon', target: 'loc-artigas-gaboto', relationType: 'UBICADO_EN', confidence: 0.95, sourceInfo: 'Vigilancia Directa', dateDetected: '2025-12-22' },
-      { id: 'et-2', source: 'tp-cueva', target: 'loc-centenera-4511', relationType: 'UBICADO_EN', confidence: 0.9, sourceInfo: 'Informe AIC', dateDetected: '2025-12-30' },
-      { id: 'et-3', source: 'tp-ali', target: 'loc-artigas-gaboto', relationType: 'ASOCIADO_CON', confidence: 0.85, sourceInfo: 'Vigilancia', dateDetected: '2025-12-22' },
-    ];
-
-    const finalEdges = [...baseEdges, ...tacticEdges];
-    finalEdges.forEach(e => addEdge(e));
+    edges.forEach(e => addEdge(e));
   }
 }));

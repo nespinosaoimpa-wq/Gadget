@@ -4,7 +4,8 @@ import { useIntelligenceStore } from '../../store/intelligenceStore';
 import type { OrgEntity } from '../../types/intelligenceTypes';
 import { 
   ArrowLeft, Users, 
-  ExternalLink, User, Crown, Target, AlertCircle
+  ExternalLink, User, Crown, Target, AlertCircle,
+  ShieldCheck, History
 } from 'lucide-react';
 
 const OrgDossier = () => {
@@ -32,7 +33,11 @@ const OrgDossier = () => {
           <div style={styles.titleInfo}>
             <h1 style={styles.name}>{org.label}</h1>
             <div style={styles.subtitle}>
-              <span className="badge badge-yellow">{org.orgType}</span>
+              <span className={`badge ${org.verificationLevel === 'VERIFICADO' || org.verificationLevel === 'JUDICIALIZADO' ? 'badge-cyan' : 'badge-yellow'}`}>
+                {org.verificationLevel || 'SUGERIDO'}
+              </span>
+              <span style={styles.dotSeparator}>•</span>
+              <span className="badge badge-gray">{org.orgType}</span>
               <span style={styles.dotSeparator}>•</span>
               <span>Territorio: {org.territory || 'En disputa / No definido'}</span>
             </div>
@@ -98,6 +103,42 @@ const OrgDossier = () => {
             <div style={styles.threatLevel}>CRÍTICO</div>
             <p style={styles.textSmall}>Prioridad de investigación 1 - Dirección General de Inteligencia Criminal.</p>
           </div>
+
+          <div className="glass-panel" style={styles.sideCard}>
+            <h3 style={styles.sectionTitle}><ShieldCheck size={18} className="text-cyan" /> Calidad Informativa</h3>
+            <div style={styles.qualityMeter}>
+              <div style={styles.qualityLabel}>Confiabilidad: {org.reliabilityScore || 5}/10</div>
+              <div style={styles.progressBg}>
+                <div style={{...styles.progressFill, width: `${(org.reliabilityScore || 5) * 10}%`}} />
+              </div>
+            </div>
+            <p style={styles.textSmall}>Métrica calculada basada en la convergencia de fuentes y verificaciones técnicas.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Logic & Milestones Section */}
+      <div className="glass-panel" style={styles.milestonesCard}>
+        <h3 style={styles.sectionTitle}><History size={18} /> Cronología de Investigación (Objetiva)</h3>
+        <div style={styles.milestoneList}>
+          {org.milestones && org.milestones.length > 0 ? (
+            org.milestones.map((m, idx) => (
+              <div key={idx} style={styles.milestoneItem}>
+                <div style={styles.milestoneLine} />
+                <div style={styles.milestoneDot} />
+                <div style={styles.milestoneContent}>
+                  <div style={styles.milestoneHeader}>
+                    <span style={styles.milestoneDate}>{m.date}</span>
+                    <span className="badge badge-cyan" style={{fontSize: '0.6rem'}}>{m.type}</span>
+                  </div>
+                  <div style={styles.milestoneDesc}>{m.description}</div>
+                  <div style={styles.milestoneVerify}>Verificado por: {m.verifiedBy}</div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div style={styles.emptyMilestones}>No hay hitos de investigación registrados para esta entidad.</div>
+          )}
         </div>
       </div>
     </div>
@@ -315,6 +356,95 @@ const styles = {
   phaseSubtext: {
     fontSize: '0.75rem',
     color: 'var(--text-muted)'
+  },
+  qualityMeter: {
+    marginTop: '10px'
+  },
+  qualityLabel: {
+    fontSize: '0.85rem',
+    color: 'var(--text-main)',
+    marginBottom: '8px',
+    fontWeight: '600'
+  },
+  progressBg: {
+    height: '6px',
+    background: 'rgba(255,255,255,0.05)',
+    borderRadius: '3px',
+    overflow: 'hidden'
+  },
+  progressFill: {
+    height: '100%',
+    background: 'linear-gradient(90deg, #00d4ff 0%, #0095ff 100%)',
+    boxShadow: '0 0 10px rgba(0,212,255,0.3)'
+  },
+  milestonesCard: {
+    padding: '25px',
+    marginTop: '20px'
+  },
+  milestoneList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0',
+    paddingLeft: '10px'
+  },
+  milestoneItem: {
+    display: 'flex',
+    gap: '20px',
+    position: 'relative' as const,
+    paddingBottom: '20px'
+  },
+  milestoneLine: {
+    position: 'absolute' as const,
+    left: '5px',
+    top: '15px',
+    bottom: '0',
+    width: '1px',
+    background: 'rgba(255,255,255,0.1)'
+  },
+  milestoneDot: {
+    width: '11px',
+    height: '11px',
+    borderRadius: '50%',
+    background: 'var(--primary-cyan)',
+    border: '2px solid rgba(255,255,255,0.2)',
+    marginTop: '5px',
+    zIndex: 1
+  },
+  milestoneContent: {
+    flex: 1,
+    background: 'rgba(255,255,255,0.02)',
+    padding: '12px 16px',
+    borderRadius: '10px',
+    border: '1px solid rgba(255,255,255,0.05)'
+  },
+  milestoneHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '6px'
+  },
+  milestoneDate: {
+    fontSize: '0.75rem',
+    fontWeight: '700',
+    color: 'var(--primary-cyan)'
+  },
+  milestoneDesc: {
+    fontSize: '0.9rem',
+    color: 'var(--text-main)',
+    lineHeight: '1.4'
+  },
+  milestoneVerify: {
+    fontSize: '0.7rem',
+    color: 'var(--text-muted)',
+    marginTop: '8px',
+    fontStyle: 'italic'
+  },
+  emptyMilestones: {
+    color: 'var(--text-muted)',
+    fontSize: '0.9rem',
+    fontStyle: 'italic',
+    textAlign: 'center' as const,
+    padding: '20px'
   }
 };
 

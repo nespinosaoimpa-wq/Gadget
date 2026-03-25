@@ -1,5 +1,17 @@
 import type { CaseClassification } from './case';
 
+// === PROFESSIONAL LOGIC TYPES ===
+export type VerificationLevel = 'SUGERIDO' | 'INFERIDO' | 'VERIFICADO' | 'JUDICIALIZADO' | 'CONFIRMADO';
+
+export interface InvestigativeMilestone {
+  id: string;
+  type: 'IDENTIFICACION' | 'VIGILANCIA' | 'ALLANAMIENTO' | 'IMPUTACION' | 'PROCESAMIENTO' | 'CONDENA' | 'ANALISIS_SNA';
+  date: string;
+  description: string;
+  evidenceId?: string; // Link to field_evidence or document
+  verifiedBy: string;
+}
+
 // === ENTITY TYPES (NODES) ===
 export type EntityType = 
   | 'PERSONA' 
@@ -18,6 +30,10 @@ export interface BaseEntity {
   createdAt: string;
   source: string;
   classification: CaseClassification;
+  verificationLevel: VerificationLevel;
+  reliabilityScore: number; // 1-10 (Objective scale)
+  milestones?: InvestigativeMilestone[];
+  analyticalNotes?: string;
   metadata?: Record<string, any>;
 }
 
@@ -94,6 +110,7 @@ export interface GraphEdge {
   target: string; // Entity ID
   relationType: RelationType;
   confidence: number; // 0.0 to 1.0
+  verificationLevel: VerificationLevel;
   sourceInfo: string;
   dateDetected: string;
   metadata?: Record<string, any>;
