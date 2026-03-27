@@ -10,6 +10,7 @@ import {
   Zap, AlertTriangle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ClaudeInsight from '../../components/intelligence/ClaudeInsight';
 
 const getEntityColor = (type: EntityType) => {
   switch (type) {
@@ -80,6 +81,7 @@ const LinkAnalysis = () => {
   const { syncWithSupabase: syncGeo } = useGeoStore();
   const [activePanel, setActivePanel] = useState<'info' | 'filters' | 'tools'>('info');
   const [minVerification, setMinVerification] = useState<string>('SUGERIDO');
+  const [showInsight, setShowInsight] = useState(false);
   const navigate = useNavigate();
 
   const verificationLevels = ['SUGERIDO', 'INFERIDO', 'VERIFICADO', 'JUDICIALIZADO', 'CONFIRMADO'];
@@ -189,7 +191,14 @@ const LinkAnalysis = () => {
                   </div>
 
                 <div style={styles.detailActions}>
-                  <button className="primary-btn" onClick={() => navigate(`/inteligencia/${selectedEntity.entityType.toLowerCase()}/${selectedEntity.id}`)}>
+                  <button 
+                    className="primary-btn" 
+                    style={{ marginBottom: '10px', width: '100%', background: 'var(--primary-blue)' }}
+                    onClick={() => setShowInsight(true)}
+                  >
+                    <Zap size={16} /> Análisis Claude
+                  </button>
+                  <button className="secondary-btn" style={{ width: '100%' }} onClick={() => navigate(`/inteligencia/${selectedEntity.entityType.toLowerCase()}/${selectedEntity.id}`)}>
                     Ver Dossier Completo
                   </button>
                 </div>
@@ -247,6 +256,13 @@ const LinkAnalysis = () => {
           )}
         </div>
       </div>
+      {showInsight && selectedEntity && (
+        <ClaudeInsight 
+          entityId={selectedEntity.id} 
+          entityName={selectedEntity.label} 
+          onClose={() => setShowInsight(false)} 
+        />
+      )}
     </div>
   );
 };

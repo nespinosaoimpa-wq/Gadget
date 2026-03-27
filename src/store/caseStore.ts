@@ -47,6 +47,51 @@ const mockCases: Case[] = [
     startDate: '2026-01-10',
     persons: [],
     tags: ['San Lorenzo', 'Los de Siempre']
+  },
+  {
+    id: 'trata-1',
+    cuij: 'EXP-TRATA-001',
+    title: 'Operativo Norte - Red de Reclutamiento',
+    description: 'Investigación activa sobre red de reclutamiento detectada en zona norte.',
+    type: 'TRATA DE PERSONAS',
+    status: 'EN INVESTIGACIÓN',
+    classification: 'CONFIDENCIAL',
+    fiscal: 'Dr. Rossi',
+    fiscalia: 'UFE Trata de Personas',
+    startDate: '2024-03-15',
+    location: { address: 'Zona Norte, Santa Fe', lat: -31.6107, lng: -60.6973 },
+    persons: [],
+    tags: ['Trata', 'Reclutamiento', 'Norte']
+  },
+  {
+    id: 'trata-2',
+    cuij: 'EXP-TRATA-002',
+    title: 'Caso 442 - Denuncia Anónima Localidad X',
+    description: 'Seguimiento de denuncia anónima sobre posibles traslados irregulares.',
+    type: 'TRATA DE PERSONAS',
+    status: 'EN INVESTIGACIÓN',
+    classification: 'RESERVADO',
+    fiscal: 'Dra. López',
+    fiscalia: 'UFE Trata de Personas',
+    startDate: '2024-03-20',
+    location: { address: 'Localidad X, Santa Fe', lat: -31.6333, lng: -60.7 },
+    persons: [],
+    tags: ['Denuncia', 'Seguimiento']
+  },
+  {
+    id: 'trata-3',
+    cuij: 'EXP-TRATA-003',
+    title: 'Intervención Provincial de Rescate',
+    description: 'Operativo finalizado con rescate de víctimas en centro urbano.',
+    type: 'TRATA DE PERSONAS',
+    status: 'RESUELTO',
+    classification: 'PÚBLICO',
+    fiscal: 'Dr. Bianchi',
+    fiscalia: 'UFE Trata de Personas',
+    startDate: '2024-02-10',
+    location: { address: 'Centro, Santa Fe', lat: -31.6212, lng: -60.7121 },
+    persons: [],
+    tags: ['Rescate', 'Finalizado']
   }
 ];
 

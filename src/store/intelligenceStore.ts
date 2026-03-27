@@ -273,6 +273,78 @@ export const useIntelligenceStore = create<IntelligenceState>((set, get) => ({
       }
     ];
 
+    // --- TRATA DE PERSONAS DATA ---
+    const trataEntities: PersonEntity[] = [
+      {
+        id: 'suj-101',
+        entityType: 'PERSONA',
+        label: 'Persona A (Víctima)',
+        aliases: ['Víctima 01'],
+        source: 'RESUMEN-TRATA-NTE',
+        classification: 'CONFIDENCIAL',
+        verificationLevel: 'VERIFICADO',
+        reliabilityScore: 9,
+        createdAt: new Date().toISOString(),
+        criminalRecord: ['trata-1'],
+        metadata: { status: 'Asistida', caseId: 'trata-1' }
+      },
+      {
+        id: 'suj-102',
+        entityType: 'PERSONA',
+        label: 'Persona B (Sospechoso)',
+        aliases: ['Alias B'],
+        source: 'RESUMEN-TRATA-NTE',
+        classification: 'RESERVADO',
+        verificationLevel: 'INFERIDO',
+        reliabilityScore: 7,
+        createdAt: new Date().toISOString(),
+        criminalRecord: ['trata-1'],
+        metadata: { status: 'Bajo Vigilancia', caseId: 'trata-1' }
+      },
+      {
+        id: 'suj-103',
+        entityType: 'PERSONA',
+        label: 'Persona C (Testigo)',
+        aliases: ['Testigo Clave'],
+        source: 'RESUMEN-TRATA-442',
+        classification: 'CONFIDENCIAL',
+        verificationLevel: 'VERIFICADO',
+        reliabilityScore: 8,
+        createdAt: new Date().toISOString(),
+        criminalRecord: ['trata-2'],
+        metadata: { status: 'Protegido', caseId: 'trata-2' }
+      }
+    ];
+
+    trataEntities.forEach(e => addEntity(e as AnyEntity));
+
+    const trataEdges: GraphEdge[] = [
+      {
+        id: 'rel-102-101',
+        source: 'suj-102',
+        target: 'suj-101',
+        relationType: 'FAMILIAR',
+        confidence: 1.0,
+        verificationLevel: 'VERIFICADO',
+        sourceInfo: 'Registro Civil / Declaraciones',
+        dateDetected: '2024-03-27',
+        metadata: { role: 'Cónyuge' }
+      },
+      {
+        id: 'rel-102-trata1',
+        source: 'suj-102',
+        target: 'trata-1',
+        relationType: 'SOSPECHOSO_DE',
+        confidence: 0.8,
+        verificationLevel: 'INFERIDO',
+        sourceInfo: 'Inteligencia Operativo Norte',
+        dateDetected: '2024-03-27'
+      }
+    ];
+
+    trataEdges.forEach(e => addEdge(e));
+
+    // --- END TRATA DE PERSONAS DATA ---
     edges.forEach(e => addEdge(e));
   }
 }));

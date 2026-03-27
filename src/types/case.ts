@@ -1,4 +1,4 @@
-export type CaseStatus = 'RECIBIDA' | 'EN INVESTIGACIÓN' | 'AMPLIACIÓN' | 'REQUERIMIENTO' | 'ELEVADA' | 'ARCHIVADA';
+export type CaseStatus = 'RECIBIDA' | 'EN INVESTIGACIÓN' | 'AMPLIACIÓN' | 'REQUERIMIENTO' | 'ELEVADA' | 'ARCHIVADA' | 'RESUELTO';
 export type CaseClassification = 'SECRETO' | 'RESERVADO' | 'CONFIDENCIAL' | 'USO INTERNO' | 'PÚBLICO';
 
 export interface Person {
@@ -15,7 +15,7 @@ export interface Case {
   cuij: string;
   title: string;
   description: string;
-  type: 'NARCOTRÁFICO' | 'HOMICIDIO' | 'ROBO CALIFICADO' | 'MICROTRÁFICO' | 'DELITO COMPLEJO' | 'OTROS';
+  type: 'NARCOTRÁFICO' | 'HOMICIDIO' | 'ROBO CALIFICADO' | 'MICROTRÁFICO' | 'DELITO COMPLEJO' | 'TRATA DE PERSONAS' | 'OTROS';
   status: CaseStatus;
   classification: CaseClassification;
   fiscal: string;
